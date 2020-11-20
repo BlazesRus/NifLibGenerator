@@ -34,54 +34,62 @@
     <Filter Include="Source Files\OtherFunctions">
       <UniqueIdentifier>{e7673aec-d6d0-4711-aaae-188c35242bbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\nifxml">
+      <UniqueIdentifier>{601512a7-ac17-4513-bbb4-72e820a653fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NifGen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GlobalCode\OtherFunctions\VariableConversionFunctions.cpp">
+    <ClCompile Include="$(GlobalCode)\OtherFunctions\VariableConversionFunctions.cpp">
       <Filter>Source Files\OtherFunctions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\GlobalCode\Databases\CustomDictionary.h">
-      <Filter>Header Files\Databases</Filter>
-    </ClInclude>
-    <ClInclude Include="..\GlobalCode\Databases\CustomOrderedDictionary.h">
-      <Filter>Header Files\Databases</Filter>
-    </ClInclude>
-    <ClInclude Include="..\GlobalCode\Databases\DataDictionary.h">
-      <Filter>Header Files\Databases</Filter>
-    </ClInclude>
-    <ClInclude Include="..\GlobalCode\Databases\IndexedDictionary.h">
-      <Filter>Header Files\Databases</Filter>
-    </ClInclude>
-    <ClInclude Include="..\GlobalCode\DLLAPI.h">
+    <ClInclude Include="$(GlobalCode)\DLLAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\GlobalCode\tsl\ordered_map.h">
-      <Filter>Header Files\tsl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\GlobalCode\AltNum\MediumDec.hpp">
+    <ClInclude Include="$(GlobalCode)\AltNum\AltNumDebug.hpp">
       <Filter>Header Files\AltNum</Filter>
     </ClInclude>
-    <ClInclude Include="..\GlobalCode\AltNum\AltNumDebug.hpp">
+    <ClInclude Include="$(GlobalCode)\Databases\CustomDictionary.h">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\Databases\CustomOrderedDictionary.h">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\Databases\DataDictionary.h">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\Databases\ElementType.hpp">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\AltNum\FloatingOperations.hpp">
       <Filter>Header Files\AltNum</Filter>
     </ClInclude>
-    <ClInclude Include="..\GlobalCode\AltNum\FloatingOperations.hpp">
+    <ClInclude Include="$(GlobalCode)\Databases\IndexedDictionary.h">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\AltNum\MediumDec.hpp">
       <Filter>Header Files\AltNum</Filter>
     </ClInclude>
-    <ClInclude Include="..\GlobalCode\AltNum\ModCheckerXX.hpp">
+    <ClInclude Include="$(GlobalCode)\Databases\MediumDecFormula.hpp">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\AltNum\ModCheckerXX.hpp">
       <Filter>Header Files\AltNum</Filter>
     </ClInclude>
-    <ClInclude Include="..\GlobalCode\OtherFunctions\VariableConversionFunctions.h">
+    <ClInclude Include="$(GlobalCode)\tsl\ordered_map.h">
+      <Filter>Header Files\Databases</Filter>
+    </ClInclude>
+    <ClInclude Include="$(GlobalCode)\OtherFunctions\VariableConversionFunctions.h">
       <Filter>Header Files\OtherFunctions</Filter>
     </ClInclude>
-    <ClInclude Include="..\GlobalCode\Databases\ElementType.hpp">
-      <Filter>Header Files\Databases</Filter>
-    </ClInclude>
-    <ClInclude Include="..\GlobalCode\Databases\MediumDecFormula.hpp">
-      <Filter>Header Files\Databases</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="nifxml\nif.xml">
+      <Filter>Resource Files\nifxml</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

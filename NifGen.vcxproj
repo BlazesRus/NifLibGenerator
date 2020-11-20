@@ -175,6 +175,9 @@
     <ClInclude Include="$(GlobalCode)\tsl\ordered_map.h" />
     <ClInclude Include="$(GlobalCode)\OtherFunctions\VariableConversionFunctions.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="nifxml\nif.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

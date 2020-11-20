@@ -11,6 +11,21 @@ using MediumDec = BlazesRusCode::MediumDec;
 #include "Databases\MediumDecFormula.hpp"
 using MediumDecFormula = BlazesRusCode::MediumDecFormula;
 
+class NifVersion
+{
+
+};
+
+class BasicTypeTag
+{
+    std::string Desc;
+};
+
+class NifGen
+{
+
+};
+
 int main()
 {
 
