@@ -13,11 +13,50 @@ using MediumDec = BlazesRusCode::MediumDec;
 using MediumDecFormula = BlazesRusCode::MediumDecFormula;
 
 /// <summary>
-/// Class NifVersion.
+/// Class NifVersion.(summaries from nif.xml)
 /// </summary>
 class NifVersion
 {
-    std::string VerNum;
+    /// <summary>
+    /// "VX_X_X_X": The unique identifier for this version. Can be used to generate C-style enums, etc.
+    /// </summary>
+    std::string id;
+    /// <summary>
+    /// "X.X.X.X": The numeric representation created by storing each part of the version in a byte.
+    /// </summary>
+    std::string num;
+    /// <summary>
+    /// False if the XML does not fully support reading of this version.
+    /// </summary>
+    bool supported;
+    /// <summary>
+    /// "<List[integer]>": The custom User Version(s) for a specific Version from a game/developer.
+    /// Note: Grouping multiple user in a list means that these user produce identical NIF layout.
+    /// Example : user = "12"
+    /// user = "0x20000 0x30000"
+    /// </summary>
+    std::vector<int> user;
+    /// <summary>
+    /// "<List[integer]>": The custom Bethesda Version(s) for a specific Version and User Version.
+    /// Note: Grouping multiple bsver in a list means that these bsver produce identical NIF layout.
+    /// Example : bsver="34"
+    /// bsver="30 31 32 33"
+    /// </summary>
+    std::vector<int> bsver;
+    /// <summary>
+    /// True when version contains extensions to the format not originating from Gamebryo.
+    /// Note: A user or bsver of non - zero implies custom = "true" and is not necessary.
+    /// </summary>
+    bool custom;
+    std::vector<std::string> ext;
+    /// <summary>
+    /// A comma-separated list of games which use this version.
+    /// `{{}
+    /// }` around a game name denotes that this version is the primary version for that game.
+    /// A version without any `{{}}` names implies that this version is "secondary".
+    /// Note: A unique game name should only have `{{}}` around it once.
+    /// </summary>
+    std::string Content;
 };
 
 //class BasicTypeTag
