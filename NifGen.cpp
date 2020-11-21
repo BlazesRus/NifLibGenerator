@@ -30,6 +30,7 @@ class NifVersion
 /// </summary>
 enum class BasicType :unsigned __int8
 {
+    Other = -1,
     uint64Type = 0,//(unsigned int64)An unsigned 64 - bit integer.(integral="true" countable="true" size="8")
     int64Type,//(signed int64)An signed 64 - bit integer.(integral="true" countable="true" size="8")
     ulittle32,//A little-endian unsigned 32-bit integer.(integral="true" countable="true" size="4")
@@ -40,6 +41,19 @@ enum class BasicType :unsigned __int8
     charType,//(char)An 8-bit character.(integral="true" countable="false" size="1" convertible="short int int64")
     byteType,//(byte)An unsigned 8-bit integer.(boolean="true" integral="true" countable="true" size="1" convertible="ushort uint uint64")
     boolType,//(bool)A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.(boolean="true" integral="true" countable="false")
+};
+
+class BasicTypeOrOther
+{
+    /// <summary>
+    /// The storage type if OtherType is empty()
+    /// </summary>
+    BasicType StorageType;
+
+    /// <summary>
+    /// The storage type if it's not empty()
+    /// </summary>
+    std::string OtherType;
 };
 
 /// <summary>
@@ -86,7 +100,7 @@ class BitFieldTag
 class CompoundTag
 {
     std::string Desc;
-    tsl::ordered_map<int, BasicType> FieldValTargets;
+    tsl::ordered_map<int, BasicTypeOrOther> FieldValTargets;
 };
 
 /// <summary>
@@ -95,7 +109,7 @@ class CompoundTag
 class niObjectTag
 {
     std::string Desc;
-    tsl::ordered_map<int, BasicType> FieldValTargets;
+    tsl::ordered_map<int, BasicTypeOrOther> FieldValTargets;
 };
 
 /// <summary>
