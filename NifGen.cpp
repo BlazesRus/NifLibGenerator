@@ -305,6 +305,7 @@ namespace NifGenerator
                 }
                 else
                 {
+/*
                     if (InsideTag)
                     {
                         if (ScanBuffer == "/" && LineChar == '>')
@@ -380,6 +381,7 @@ namespace NifGenerator
                             }
                         }
                     }
+*/
                 }
             }
             return true;
