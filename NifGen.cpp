@@ -305,9 +305,57 @@ namespace NifGenerator
                 }
                 else
                 {
-/*
                     if (InsideTag)
                     {
+                        if (ScanBuffer == "/" && LineChar == '>')
+                        {
+                            CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+                            InsideTag = false; TagContentStage = 0;
+                        }
+                        else if (LineChar == '>')
+                        {
+
+                        }
+                        else if (CurrentTag.empty())
+                        {
+                            if (ScanBuffer.empty())
+                            {
+                                if (LineChar == '!')//Detecting potential Commented Out Parts
+                                {
+                                    PotentialComment = true;
+                                }
+                                else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                                {
+                                    ScanBuffer += LineChar;
+                                }
+                            }
+                            else if(LineChar=='/')//Closed Tag without any arguments
+                            {
+
+                            }
+                            else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
+                            {
+                                CurrentTag = ScanBuffer;
+                                ScanBuffer.clear();
+                                if (LineChar != '\\')
+                                {
+                                    ScanningArgData = true; Stage = 0;
+                                }
+                            }
+                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                            {
+                                ScanBuffer += LineChar;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (LineChar == '<')
+                        {
+                            InsideTag = true;
+                        }
+                    }
+/*
                         if (ScanBuffer == "/" && LineChar == '>')
                         {
                             switch (TagType)
@@ -390,6 +438,21 @@ namespace NifGenerator
         {
             return LoadXML("nif.xml");
         }
+        void GenerateDebugOutput()
+        {
+            for (std::vector<NifVersion>::iterator CurrentVal = versionData.begin(), LastVal = versionData.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+
+            }
+            for (std::vector<BitFieldTag>::iterator CurrentVal = bitFieldData.begin(), LastVal = bitFieldData.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+
+            }
+            for (std::vector<niObjectTag>::iterator CurrentVal = niObjectData.begin(), LastVal = niObjectData.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+
+            }
+        }
         void GenerateFiles()
         {
 
@@ -401,5 +464,5 @@ int main()
 {
     NifGenerator::NifGen XmlData;
     XmlData.LoadXML();
-    XmlData.GenerateFiles();
+    //XmlData.GenerateFiles();
 }
