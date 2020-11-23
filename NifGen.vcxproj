@@ -176,6 +176,9 @@
     <ClInclude Include="$(GlobalCode)\OtherFunctions\VariableConversionFunctions.h" />
     <ClInclude Include="..\..\..\MultiPlatformGlobalCode\GlobalCode\Databases\DoubleFormula.hpp" />
     <ClInclude Include="..\..\..\MultiPlatformGlobalCode\GlobalCode\Databases\VariableFormula.hpp" />
+    <ClInclude Include="ArgList.h" />
+    <ClInclude Include="ArgStringList.h" />
+    <ClInclude Include="TagDepthTree.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="nifxml\nif.xml" />
