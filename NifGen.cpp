@@ -132,6 +132,11 @@ namespace NifGenerator
     {
         std::string Desc;
         tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
+        BitFlag(std::string optionName, short val)
+        {
+            Desc = "";
+            FlagValues.insert_or_assign(optionName, val);
+        }
     };
 
     /// <summary>
@@ -198,14 +203,10 @@ namespace NifGenerator
             //Current state of code loading for certain sections of code
             size_t Stage = 0;
 
-            //Index of hkobject class node
-            unsigned int CurrentClassNodeIndex = 0;
-            //Index of last entered node
-            unsigned int CurrentNodeIndex = 0;
             TagDepthTree TagDepth;
-            std::string HkClassType = "";
 
-            unsigned EntryNodeIndex = 0;
+            int EntryNodeIndex = -1;
+            std::string EntryTagName = "";
 
             std::ifstream inFile;
             inFile.open(FilePath);
@@ -307,14 +308,24 @@ namespace NifGenerator
                 {
                     if (InsideTag)
                     {
-                        if (ScanBuffer == "/" && LineChar == '>')
+                        if (LineChar == '>')
                         {
-                            CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                            InsideTag = false; TagContentStage = 0;
-                        }
-                        else if (LineChar == '>')
-                        {
+                            if (!EntryTagName.empty())
+                            {//Treat both bit and value parameter as the value of the option(so supports both 0.9.0 and 0.9.2 option structures) 
+                                if (EntryTagName == "bitflags")
+                                {
 
+                                }
+                                else if (EntryTagName == "enum")
+                                {
+
+                                }
+                            }
+                            if (ScanBuffer == "/")
+                            {
+                                CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+                                InsideTag = false; TagContentStage = 0;
+                            }
                         }
                         else if (CurrentTag.empty())
                         {
@@ -331,7 +342,8 @@ namespace NifGenerator
                             }
                             else if(LineChar=='/')//Closed Tag without any arguments
                             {
-
+                                CurrentTag = ScanBuffer;
+                                ScanBuffer = "/";
                             }
                             else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
                             {
