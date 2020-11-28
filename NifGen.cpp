@@ -165,15 +165,59 @@ namespace NifGenerator
         tsl::ordered_map<int, BasicTypeOrOther> FieldValTargets;
     };
 
+    class OtherTag
+    {
+        std::string EntryTagName;
+        std::string Desc;
+    };
+
     /// <summary>
     /// Class NifGen.
     /// </summary>
     class NifGen
     {
+    protected:
+        /// <summary>
+        /// Equal to std::pair(std::string, int)
+        /// </summary>
+        class DataOrderInfo
+        {
+        public:
+            std::string EntryTagName;
+            int Index;
+            DataOrderInfo(std::string entryTagName, int indexPosition)
+            {
+                EntryTagName = entryTagName;
+                Index = indexPosition;
+            }
+        };
     public:
+        /// <summary>
+        /// The loaded XML data order(EntryTagName, Index in Vector)
+        /// </summary>
+        std::vector<DataOrderInfo> LoadedXmlDataOrder;
+        ///// <summary>
+        ///// The other data(Shouldn't be needed right now)
+        ///// </summary>
+        //std::vector<OtherTag> otherData;
+
+        /// <summary>
+        /// The version data
+        /// </summary>
         std::vector<NifVersion> versionData;
+        /// <summary>
+        /// The bit field data
+        /// </summary>
         std::vector<BitFieldTag> bitFieldData;
+        /// <summary>
+        /// The niObjectTag xml tag data
+        /// </summary>
         std::vector<niObjectTag> niObjectData;
+        /// <summary>
+        /// Loads the XML.
+        /// </summary>
+        /// <param name="FilePath">The file path.</param>
+        /// <returns>bool</returns>
         bool LoadXML(std::string FilePath)
         {
             char LineChar;
@@ -206,6 +250,7 @@ namespace NifGenerator
 
             int EntryNodeIndex = -1;
             std::string EntryTagName = "";
+            bool InsideClosingTag = false;
 
             bool StartedTagRead = false;
             bool SkipCurrentTag = false;
@@ -307,44 +352,147 @@ namespace NifGenerator
                 }
                 else if(StartedTagRead)//Only start saving scans once enter certain depth of xml file
                 {
-                    if (InsideTag)
+                    if(InsideClosingTag)
                     {
-                        if (LineChar == '>')
+                        if(LineChar=='>')
                         {
-                            if (EntryTagName.empty())
+                            if (CurrentTag == EntryTagName)//Exiting entry tag
                             {
-                                if (CurrentTag == "enum")
-                                {
-
-                                }
-                                else//OtherTag
-                                {
-
-                                }
+                                //if (EntryTagName == "compound")
+                                //{
+                                //}
+                                //else if (EntryTagName == "enum")
+                                //{
+                                //}
+                                //else if (EntryTagName == "bitflags")
+                                //{
+                                //}
+                                //else if (EntryTagName == "bitfield")
+                                //{
+                                //}
+                                //else if (EntryTagName == "niobject")
+                                //{
+                                //}
+                                //else if (EntryTagName == "version")
+                                //{
+                                //}
+                                //else if (EntryTagName == "token")
+                                //{
+                                //}
+                                //else if (EntryTagName == "module")
+                                //{
+                                //}
+                                //else if (EntryTagName == "basic")
+                                //{
+                                //}
+                                LoadedXmlDataOrder.push_back(EntryTagName,EntryNodeIndex>);
+                                EntryTagName.clear();
                             }
-                            else
-                            {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
-                                if (EntryTagName == "enum")
+                            else//Exiting inner tag 
+                            {
+                                if (EntryTagName == "compound")
+                                {
+                                }
+                                else if (EntryTagName == "enum")
                                 {
                                 }
                                 else if (EntryTagName == "bitflags")
                                 {
                                 }
+                                else if (EntryTagName == "bitfield")
+                                {
+                                }
+                                else if (EntryTagName == "niobject")
+                                {
+                                }
+                                else if (EntryTagName == "version")
+                                {
+                                }
+                                else if (EntryTagName == "token")
+                                {
+                                }
+                                else if (EntryTagName == "module")
+                                {
+                                }
+                                else if (EntryTagName == "basic")
+                                {
+                                }
+                            }
+                            CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+                            TagContentStage = 0;
+                            InsideClosingTag = false; InsideTag = false;
+                        }
+                    }
+                    else if (InsideTag)
+                    {
+                        if (LineChar == '>')
+                        {
+                            if (EntryTagName.empty())
+                            {
+                                if (CurrentTag == "compound")
+                                {
+                                }
+                                else if (CurrentTag == "enum")
+                                {
+                                }
+                                else if (CurrentTag == "bitflags")
+                                {
+                                }
+                                else if (CurrentTag == "bitfield")
+                                {
+                                }
+                                else if (CurrentTag == "niobject")
+                                {
+                                }
+                                else if (CurrentTag == "version")
+                                {
+                                }
+                                else if (CurrentTag == "token")
+                                {
+                                }
+                                else if (CurrentTag == "module")
+                                {
+                                }
+                                else if (CurrentTag == "basic")
+                                {
+                                }
+                                else//OtherTag
+                                {
+                                }
+                                EntryTagName = CurrentTag;//Going to assuming that all entry tags have at least one argument field;All Entry Tags have arguments in current format(otherwise current code breaks)
+                            }
+                            else
+                            {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
+                                if (EntryTagName == "compound")
+                                {
+                                }
+                                else if (EntryTagName == "enum")
+                                {
+                                }
+                                else if (EntryTagName == "bitflags")
+                                {
+                                }
+                                else if (EntryTagName == "bitfield")
+                                {
+                                }
+                                else if (EntryTagName == "niobject")
+                                {
+                                }
+                                else if (EntryTagName == "version")
+                                {
+                                }
+                                else if (EntryTagName == "token")
+                                {
+                                }
+                                else if (EntryTagName == "module")
+                                {
+                                }
+                                else if (EntryTagName == "basic")
+                                {
+                                }
                                 else//OtherTag
                                 {
 
-                                }
-                            }
-                            if (ScanBuffer == "/")
-                            {
-                                if (CurrentTag == EntryTagName)
-                                {
-
-                                }
-                                else
-                                {
-                                    CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                                    InsideTag = false; TagContentStage = 0;
                                 }
                             }
                         }
@@ -353,13 +501,13 @@ namespace NifGenerator
                             if (ScanBuffer.empty())
                             {
                                 if (LineChar == '!')//Detecting potential Commented Out Parts
-                                {
                                     PotentialComment = true;
+                                else if(LineChar=='/')
+                                {
+
                                 }
                                 else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                                {
                                     ScanBuffer += LineChar;
-                                }
                             }
                             else if (LineChar == '/')//Closed Tag without any arguments
                             {
