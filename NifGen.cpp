@@ -196,7 +196,6 @@ namespace NifGenerator
 
             bool PotentialComment = false;
             bool InsideParenthesis = false;
-            bool InsideClassNodeSection = false;
             //0 = Not Scanning TagContent Yet: 1 = Potential SingleLine TagContent: 2 Multi-line target content
             short TagContentStage = 0;
 
@@ -208,6 +207,8 @@ namespace NifGenerator
             int EntryNodeIndex = -1;
             std::string EntryTagName = "";
 
+            bool StartedTagRead = false;
+            bool SkipCurrentTag = false;
             std::ifstream inFile;
             inFile.open(FilePath);
             if (!inFile)
@@ -304,27 +305,47 @@ namespace NifGenerator
                         }
                     }
                 }
-                else
+                else if(StartedTagRead)//Only start saving scans once enter certain depth of xml file
                 {
                     if (InsideTag)
                     {
                         if (LineChar == '>')
                         {
-                            if (!EntryTagName.empty())
-                            {//Treat both bit and value parameter as the value of the option(so supports both 0.9.0 and 0.9.2 option structures) 
-                                if (EntryTagName == "bitflags")
+                            if (EntryTagName.empty())
+                            {
+                                if (CurrentTag == "enum")
                                 {
 
                                 }
-                                else if (EntryTagName == "enum")
+                                else//OtherTag
+                                {
+
+                                }
+                            }
+                            else
+                            {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
+                                if (EntryTagName == "enum")
+                                {
+                                }
+                                else if (EntryTagName == "bitflags")
+                                {
+                                }
+                                else//OtherTag
                                 {
 
                                 }
                             }
                             if (ScanBuffer == "/")
                             {
-                                CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                                InsideTag = false; TagContentStage = 0;
+                                if (CurrentTag == EntryTagName)
+                                {
+
+                                }
+                                else
+                                {
+                                    CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+                                    InsideTag = false; TagContentStage = 0;
+                                }
                             }
                         }
                         else if (CurrentTag.empty())
@@ -340,7 +361,7 @@ namespace NifGenerator
                                     ScanBuffer += LineChar;
                                 }
                             }
-                            else if(LineChar=='/')//Closed Tag without any arguments
+                            else if (LineChar == '/')//Closed Tag without any arguments
                             {
                                 CurrentTag = ScanBuffer;
                                 ScanBuffer = "/";
@@ -349,12 +370,168 @@ namespace NifGenerator
                             {
                                 CurrentTag = ScanBuffer;
                                 ScanBuffer.clear();
-                                if (LineChar != '\\')
-                                {
-                                    ScanningArgData = true; Stage = 0;
-                                }
+                                //if (LineChar != '\\')
+                                //{
+                                //    ScanningArgData = true; Stage = 0;
+                                //}
                             }
                             else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                            {
+                                ScanBuffer += LineChar;
+                            }
+                        }
+                        //------------------Scanning Argument Field/Values-------------------------------
+                        else
+                        {
+                            if (ScanBuffer.empty())
+                            {
+                                if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                                {
+                                    ScanBuffer += LineChar;
+                                }
+                            }
+                            else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
+                            {
+                                //CurrentTag = ScanBuffer;
+                                ScanBuffer.clear();
+                                //if (LineChar != '\\')
+                                //{
+                                //    ScanningArgData = true; Stage = 0;
+                                //}
+                            }
+                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                            {
+                                ScanBuffer += LineChar;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (LineChar == '<')
+                        {
+                            //Send Description field into tag target
+
+                            InsideTag = true; ScanBuffer.clear();
+                        }
+                        else//If description value is empty, add data to description field buffer
+                        {
+                            ScanBuffer += LineChar;
+                        }
+                    }
+                    /*
+                                            if (ScanBuffer == "/" && LineChar == '>')
+                                            {
+                                                switch (TagType)
+                                                {
+                                                case 1://SelfContainedTag
+                                                    NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);
+                                                    break;
+                                                case 3://XMLVersionTag(Same as SelfContained Tag except for ? in front and such)
+                                                    break;
+                                                default://TagIsClosing(TagType==2)
+                                                        //Decrease TagDepth
+                                                    TagDepth.RemoveLastTagMatch(CurrentTag);
+                                                    break;
+                                                }
+                                                CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+                                                InsideTag = false; TagContentStage = 0;
+                                            }
+                                            else if (LineChar == '>')
+                                            {
+                                                CurrentNodeIndex = NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);//Index of Last Entered Node is it's parent
+                                                if (InsideClassNodeSection && CurrentClassNodeIndex == 0 && CurrentTag == hkobject && ArgBuffer.HasKey(Signature))
+                                                {
+                                                    CurrentClassNodeIndex = CurrentNodeIndex;
+                                                    CurrentNodeName = ArgBuffer["Name"][0];
+                                                    NodeLinks.Add(CurrentNodeName, CurrentClassNodeIndex);
+                                                }
+                                                //Increase TagDepth
+                                                CurrentNodeName = CurrentTag;
+                                                CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+                                                InsideTag = false; TagContentStage = 0;
+                                            }
+                                            else if (CurrentTag.empty())
+                                            {
+                                                if (!ScanBuffer.empty())
+                                                {
+                                                    if (LineChar == '!')//Detecting potential Commented Out Parts
+                                                    {
+                                                        PotentialComment = true;
+                                                    }
+                                                    else if (LineChar == ' ' || LineChar == '/t')
+                                                    {
+                                                        CurrentTag = ScanBuffer;
+                                                    }
+                                                    else
+                                                    {
+                                                        ScanBuffer += LineChar;
+                                                    }
+                                                }
+                                                else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                                                {
+                                                    ScanBuffer += LineChar;
+                                                    if (LineChar != '\\')
+                                                    {
+                                                        ScanningArgData = true; Stage = 0;
+                                                    }
+                                                }
+                                            }
+                                            else if (TagContentStage > 0)
+                                            {
+                                            }
+                                            else
+                                            {
+                                                if (LineChar == '<')
+                                                {
+                                                    InsideTag = true;
+                                                }
+                                                else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                                                {
+                                                    ScanBuffer = LineChar;
+                                                    TagContentStage = 1;
+                                                }
+                                            }
+                                        }
+                    */
+                }
+                else
+                {
+                    if (InsideTag)
+                    {
+                        if(SkipCurrentTag)
+                        {
+                            if(LineChar=='>')
+                            {
+                                SkipCurrentTag = false; ScanBuffer.clear(); InsideTag = false;
+                            }
+                        }
+                        else
+                        {
+                            if (ScanBuffer.empty())
+                            {
+                                if (LineChar == '!')//Detecting potential Commented Out Parts
+                                {
+                                    PotentialComment = true;
+                                }
+                                else if (LineChar == '?')
+                                    SkipCurrentTag = true;
+                                else if (LineChar != ' ' && LineChar != '	')
+                                {
+                                    ScanBuffer += LineChar;
+                                }
+                            }
+                            else if (LineChar == ' ' || LineChar == '	')
+                            {
+                                if (ScanBuffer == "niftoolsxml")//Don't need version number info from the file in order to process it(since assuming minimum version of 9.0)
+                                    SkipCurrentTag = true;
+                                else
+                                {
+                                    CurrentTag = ScanBuffer;
+                                    ScanBuffer.clear();
+                                    StartedTagRead = true;
+                                }
+                            }
+                            else
                             {
                                 ScanBuffer += LineChar;
                             }
@@ -367,81 +544,6 @@ namespace NifGenerator
                             InsideTag = true;
                         }
                     }
-/*
-                        if (ScanBuffer == "/" && LineChar == '>')
-                        {
-                            switch (TagType)
-                            {
-                            case 1://SelfContainedTag
-                                NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);
-                                break;
-                            case 3://XMLVersionTag(Same as SelfContained Tag except for ? in front and such)
-                                break;
-                            default://TagIsClosing(TagType==2)
-                                    //Decrease TagDepth
-                                TagDepth.RemoveLastTagMatch(CurrentTag);
-                                break;
-                            }
-                            CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                            InsideTag = false; TagContentStage = 0;
-                        }
-                        else if (LineChar == '>')
-                        {
-                            CurrentNodeIndex = NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);//Index of Last Entered Node is it's parent
-                            if (InsideClassNodeSection && CurrentClassNodeIndex == 0 && CurrentTag == hkobject && ArgBuffer.HasKey(Signature))
-                            {
-                                CurrentClassNodeIndex = CurrentNodeIndex;
-                                CurrentNodeName = ArgBuffer["Name"][0];
-                                NodeLinks.Add(CurrentNodeName, CurrentClassNodeIndex);
-                            }
-                            //Increase TagDepth
-                            CurrentNodeName = CurrentTag;
-                            CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                            InsideTag = false; TagContentStage = 0;
-                        }
-                        else if (CurrentTag.empty())
-                        {
-                            if (!ScanBuffer.empty())
-                            {
-                                if (LineChar == '!')//Detecting potential Commented Out Parts
-                                {
-                                    PotentialComment = true;
-                                }
-                                else if (LineChar == ' ' || LineChar == '/t')
-                                {
-                                    CurrentTag = ScanBuffer;
-                                }
-                                else
-                                {
-                                    ScanBuffer += LineChar;
-                                }
-                            }
-                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                            {
-                                ScanBuffer += LineChar;
-                                if (LineChar != '\\')
-                                {
-                                    ScanningArgData = true; Stage = 0;
-                                }
-                            }
-                        }
-                        else if (TagContentStage > 0)
-                        {
-                        }
-                        else
-                        {
-                            if (LineChar == '<')
-                            {
-                                InsideTag = true;
-                            }
-                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                            {
-                                ScanBuffer = LineChar;
-                                TagContentStage = 1;
-                            }
-                        }
-                    }
-*/
                 }
             }
             return true;
