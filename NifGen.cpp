@@ -73,36 +73,36 @@ namespace NifGenerator
     //    std::string Desc;
     //};
 
-    /// <summary>
-    /// Storage type of target value
-    /// </summary>
-    enum class BasicType :unsigned __int8
-    {
-        Other = -1,
-        uint64Type = 0,//(unsigned int64)An unsigned 64 - bit integer.(integral="true" countable="true" size="8")
-        int64Type,//(signed int64)An signed 64 - bit integer.(integral="true" countable="true" size="8")
-        ulittle32,//A little-endian unsigned 32-bit integer.(integral="true" countable="true" size="4")
-        uintType,//(unsigned int)An unsigned 32-bit integer.(integral="true" countable="true" size="4" convertible="uint64")
-        intType,//(signed int)A signed 32-bit integer.(integral="true" countable="false" size="4" convertible="int64")
-        ushortType,//(unsigned short)An unsigned 16-bit integer.(integral="true" countable="true" size="2" convertible="uint uint64")
-        shortType,//(signed short)A signed 16-bit integer.(integral="true" countable="false" size="2" convertible="int int64")
-        charType,//(char)An 8-bit character.(integral="true" countable="false" size="1" convertible="short int int64")
-        byteType,//(byte)An unsigned 8-bit integer.(boolean="true" integral="true" countable="true" size="1" convertible="ushort uint uint64")
-        boolType,//(bool)A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.(boolean="true" integral="true" countable="false")
-    };
+    ///// <summary>
+    ///// Storage type of target value
+    ///// </summary>
+    //enum class BasicType :unsigned __int8
+    //{
+    //    Other = -1,
+    //    uint64Type = 0,//(unsigned int64)An unsigned 64 - bit integer.(integral="true" countable="true" size="8")
+    //    int64Type,//(signed int64)An signed 64 - bit integer.(integral="true" countable="true" size="8")
+    //    ulittle32,//A little-endian unsigned 32-bit integer.(integral="true" countable="true" size="4")
+    //    uintType,//(unsigned int)An unsigned 32-bit integer.(integral="true" countable="true" size="4" convertible="uint64")
+    //    intType,//(signed int)A signed 32-bit integer.(integral="true" countable="false" size="4" convertible="int64")
+    //    ushortType,//(unsigned short)An unsigned 16-bit integer.(integral="true" countable="true" size="2" convertible="uint uint64")
+    //    shortType,//(signed short)A signed 16-bit integer.(integral="true" countable="false" size="2" convertible="int int64")
+    //    charType,//(char)An 8-bit character.(integral="true" countable="false" size="1" convertible="short int int64")
+    //    byteType,//(byte)An unsigned 8-bit integer.(boolean="true" integral="true" countable="true" size="1" convertible="ushort uint uint64")
+    //    boolType,//(bool)A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.(boolean="true" integral="true" countable="false")
+    //};
 
-    class BasicTypeOrOther
-    {
-        /// <summary>
-        /// The storage type if OtherType is empty()
-        /// </summary>
-        BasicType StorageType;
+    //class BasicTypeOrOther
+    //{
+    //    /// <summary>
+    //    /// The storage type if OtherType is empty()
+    //    /// </summary>
+    //    BasicType StorageType;
 
-        /// <summary>
-        /// The storage type if it's not empty()
-        /// </summary>
-        std::string OtherType;
-    };
+    //    /// <summary>
+    //    /// The storage type if it's not empty()
+    //    /// </summary>
+    //    std::string OtherType;
+    //};
 
     /// <summary>
     /// Class SmallValPlusDesc.
@@ -121,54 +121,146 @@ namespace NifGenerator
         std::string Desc;
         tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
         std::string Prefix;
-        BasicType StorageType;
+        std::string StorageType;
         std::vector<std::string> versionsUsed;
-    };
-
-    /// <summary>
-    /// <bitflags> tag content
-    /// </summary>
-    class BitFlag
-    {
-        std::string Desc;
-        tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
-        BitFlag(std::string optionName, short val)
+        EnumTag(std::string descVal, std::string storeType = "uint")
         {
-            Desc = "";
+            Desc = descVal;
+            StorageType = storeType;
+        }
+        void AddOption(std::string optionName, short val)
+        {
             FlagValues.insert_or_assign(optionName, val);
         }
     };
 
     /// <summary>
-    /// Class BitFieldTag.
+    /// bitflags tag content
+    /// </summary>
+    class BitFlag
+    {
+        std::string Desc;
+        std::string StorageType;
+        tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
+        BitFlag(std::string descVal, std::string storeType="uint")
+        {
+            Desc = descVal;
+            StorageType = storeType;
+        }
+        void AddOption(std::string optionName, short val)
+        {
+            FlagValues.insert_or_assign(optionName, val);
+        }
+    };
+
+    class memberTag
+    {
+        //int width;
+
+        /// <summary>
+        /// The argument fields of the xml tag(could also store as separate specific arg storage later)
+        /// </summary>
+        ArgList ArgFields;
+    };
+
+    /// <summary>
+    /// bitfield tag content
     /// </summary>
     class BitFieldTag
     {
         std::string Desc;
+        std::vector<memberTag> memberTags;
+    };
+
+    class fieldTag
+    {
+        /// <summary>
+        /// TagContent of the tag(before inner xml tag(s))
+        /// </summary>
+        std::string Desc;
+        /// <summary>
+        /// The argument fields of the xml tag(could also store as separate specific arg storage later)
+        /// </summary>
+        ArgList ArgFields;
+        /// <summary>
+        /// Vector of index references in InnerTag
+        /// </summary>
+        std::vector<int> ChildTags;
     };
 
     /// <summary>
-    /// Class CompoundTag.
+    /// compound and niObject tag content
     /// </summary>
-    class CompoundTag
+    class FieldStorageTag
     {
         std::string Desc;
-        tsl::ordered_map<int, BasicTypeOrOther> FieldValTargets;
+        /// <summary>
+        /// The argument fields of the xml tag
+        /// </summary>
+        ArgList ArgFields;
+        /// <summary>
+        /// The base level <field> tags
+        /// </summary>
+        std::vector<fieldTag> PrimaryTags;
+        /// <summary>
+        /// Child tags of PrimaryTags and other InnerTags(not likely to be used in most cases)
+        /// </summary>
+        std::vector<OtherTagMember> InnerTags;
     };
+
+    class OtherTagMember
+    {
+        std::string TagName;
+        std::string Desc;
+        /// <summary>
+        /// The argument fields of the xml tag
+        /// </summary>
+        ArgList ArgFields;
+        /// <summary>
+        /// Vector of index references in InnerTag
+        /// </summary>
+        std::vector<int> ChildTags;
+    };
+
+    ///// <summary>
+    ///// Class OtherTag (vector used instead of map based since don't need to be able to change the tags after load them).
+    ///// </summary>
+    //class OtherTag
+    //{
+    //    std::string EntryTagName;
+    //    std::string Desc;
+    //    /// <summary>
+    //    /// The argument fields of the xml tag
+    //    /// </summary>
+    //    ArgList ArgFields;
+    //    /// <summary>
+    //    /// The primary tags
+    //    /// </summary>
+    //    std::vector<OtherTagMember> PrimaryTags;
+    //    /// <summary>
+    //    /// Child tags of PrimaryTags and other InnerTags
+    //    /// </summary>
+    //    std::vector<OtherTagMember> InnerTags;
+    //};
 
     /// <summary>
-    /// Class niObjectTag.
+    /// Store other specific entry level tags with this (such as basic tags)
     /// </summary>
-    class niObjectTag
+    class GeneralTag
     {
         std::string Desc;
-        tsl::ordered_map<int, BasicTypeOrOther> FieldValTargets;
-    };
-
-    class OtherTag
-    {
-        std::string EntryTagName;
-        std::string Desc;
+        /// <summary>
+        /// The argument fields of the xml tag
+        /// </summary>
+        ArgList ArgFields;
+        /// <summary>
+        /// The primary tags
+        /// </summary>
+        std::vector<OtherTagMember> PrimaryTags;
+        /// <summary>
+        /// Child tags of PrimaryTags and other InnerTags
+        /// </summary>
+        std::vector<OtherTagMember> InnerTags;
     };
 
     /// <summary>
@@ -193,7 +285,8 @@ namespace NifGenerator
         };
     public:
         /// <summary>
-        /// The loaded XML data order(EntryTagName, Index in Vector)
+        /// The loaded XML data order(EntryTagName, Index in Vector);
+        /// Only needed for regeneration of xml file(mainly for debugging purposes) 
         /// </summary>
         std::vector<DataOrderInfo> LoadedXmlDataOrder;
         ///// <summary>
@@ -202,17 +295,58 @@ namespace NifGenerator
         //std::vector<OtherTag> otherData;
 
         /// <summary>
-        /// The version data
+        /// The compound tag xml data
+        /// </summary>
+        std::vector<FieldStorageTag> compoundData;
+
+        /// <summary>
+        /// The enum tag xml data
+        /// </summary>
+        std::vector<EnumTag> enumData;
+
+        /// <summary>
+        /// The bitflags tag xml data
+        /// </summary>
+        std::vector<BitFlag> enumData;
+
+        /// <summary>
+        /// The version tag xml data
         /// </summary>
         std::vector<NifVersion> versionData;
+
         /// <summary>
-        /// The bit field data
+        /// The bitfield tag xml data
         /// </summary>
         std::vector<BitFieldTag> bitFieldData;
+
         /// <summary>
-        /// The niObjectTag xml tag data
+        /// The niObject tag xml data
         /// </summary>
-        std::vector<niObjectTag> niObjectData;
+        std::vector<FieldStorageTag> niObjectData;
+
+        /// <summary>
+        /// The basic tag xml data (not really needed for generation of c++ files)
+        /// </summary>
+        std::vector<GeneralTag> basicData;
+
+        /// <summary>
+        /// The token tag xml data (not really needed for generation of c++ files)
+        /// </summary>
+        std::vector<GeneralTag> tokenData;
+
+        /// <summary>
+        /// The module tag xml data (not really needed for generation of c++ files)
+        /// </summary>
+        std::vector<GeneralTag> moduleData;
+
+        /// <summary>
+        /// Generate XML files based on loaded content 
+        /// </summary>
+        void GenerateXMLsFromContent()
+        {
+
+        }
+
         /// <summary>
         /// Loads the XML.
         /// </summary>
@@ -385,7 +519,7 @@ namespace NifGenerator
                                 //else if (EntryTagName == "basic")
                                 //{
                                 //}
-                                LoadedXmlDataOrder.push_back(EntryTagName,EntryNodeIndex>);
+                                LoadedXmlDataOrder.push_back(DataOrderInfo(EntryTagName,EntryNodeIndex));
                                 EntryTagName.clear();
                             }
                             else//Exiting inner tag 
