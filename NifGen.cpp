@@ -684,6 +684,8 @@ namespace NifGenerator
                                         moduleData.push_back(NewGeneralTag);
                                     else if (EntryTagName == "basic")
                                         basicData.push_back(NewGeneralTag);
+                                    if (!TagDepth.empty())
+                                        TagDepth.clear();
                                     //Start Generic Argument Scanning for those with ArgData field (manual code for the others)
                                     if(EntryTagName=="compound"||EntryTagName=="niobject"|| EntryTagName == "token"|| EntryTagName == "module"|| EntryTagName == "basic")
                                         ScanningArgData = true; Stage = 0;
