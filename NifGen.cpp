@@ -227,6 +227,7 @@ namespace NifGenerator
 
     class InnerTagIndex
     {
+    public:
         bool InsideInnerTag;
         int PrimaryIndex;
         int SecondaryIndex;
@@ -270,6 +271,8 @@ namespace NifGenerator
         std::vector<int> ChildTags;
     };
 
+
+
     /// <summary>
     /// compound and niObject tag content
     /// </summary>
@@ -289,7 +292,14 @@ namespace NifGenerator
         /// <summary>
         /// Child tags of PrimaryTags and other InnerTags(not likely to be used in most cases)
         /// </summary>
-        std::vector<OtherTagMember> InnerTags;
+        std::vector<fieldTag> InnerTags;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldStorageTag"/> class.
+        /// </summary>
+        FieldStorageTag()
+        {
+
+        }
     };
 
     class OtherTagMember
@@ -305,6 +315,13 @@ namespace NifGenerator
         /// Vector of index references in InnerTag
         /// </summary>
         std::vector<int> ChildTags;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OtherTagMember"/> class.
+        /// </summary>
+        OtherTagMember()
+        {
+            Desc = "";
+        }
     };
 
     /// <summary>
@@ -326,6 +343,14 @@ namespace NifGenerator
         /// Child tags of PrimaryTags and other InnerTags
         /// </summary>
         std::vector<OtherTagMember> InnerTags;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneralTag"/> class.
+        /// </summary>
+        GeneralTag()
+        {
+            Desc = "";
+        }
     };
 
     /// <summary>

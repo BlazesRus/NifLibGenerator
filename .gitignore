@@ -38,3 +38,5 @@
 *.db-wal
 
 .vs/NifGen/v16/
+
+InnerTagDepth.hpp
