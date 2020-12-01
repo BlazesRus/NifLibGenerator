@@ -10,7 +10,6 @@ using MediumDec = BlazesRusCode::MediumDec;
 #include "AltNum\FloatingOperations.hpp"
 #include "Databases\MediumDecFormula.hpp"
 #include "tsl/ordered_map.h"
-#include "TagDepthTree.h"
 #include "ArgStringList.h"
 #include "ArgList.h"
 
@@ -225,33 +224,52 @@ namespace NifGenerator
         }
     };
 
+    enum class TagIndexType : unsigned __int8
+    {
+        TagIsEntryLevel = 0,
+        TagIsPrimary,
+        ParentTagIsPrimary,
+        ParentTagIsSecondary
+    };
+
     class InnerTagIndex
     {
     public:
-        bool InsideInnerTag;
-        int PrimaryIndex;
-        int SecondaryIndex;
-        bool ParentTagWasPrimary;
-        int ParentIndex;
-        int CurrentIndex;
-        void clear()
+        TagIndexType CurrentIndexType;
+		int ParentIndex;
+		int CurrentIndex;
+		void clear()
+		{
+            CurrentIndexType = TagIndexType::TagIsEntryLevel;
+		}
+		InnerTagIndex()
         {
-            InsideInnerTag = false;
-            PrimaryIndex = -1;
-            SecondaryIndex = -1;
-            ParentTagWasPrimary = true;
-            ParentIndex = -1;
-            CurrentIndex = -1;
-        }
-        InnerTagIndex()
-        {
-            InsideInnerTag = false;
-            PrimaryIndex = -1;
-            SecondaryIndex = -1;
-            ParentTagWasPrimary = true;
-            ParentIndex = -1;
-            CurrentIndex = -1;
-        }
+            CurrentIndexType = TagIndexType::TagIsEntryLevel;
+            ParentIndex = 0;
+            CurrentIndex = 0;
+		}
+  //      bool InsideInnerTag;
+  //      int PrimaryIndex;
+  //      int SecondaryIndex;
+  //      bool ParentTagWasPrimary;
+  //      void clear()
+  //      {
+  //          InsideInnerTag = false;
+  //          PrimaryIndex = -1;
+  //          SecondaryIndex = -1;
+  //          ParentTagWasPrimary = true;
+  //          ParentIndex = -1;
+  //          CurrentIndex = -1;
+  //      }
+  //      InnerTagIndex()
+  //      {
+  //          InsideInnerTag = false;
+  //          PrimaryIndex = -1;
+  //          SecondaryIndex = -1;
+  //          ParentTagWasPrimary = true;
+  //          ParentIndex = -1;
+  //          CurrentIndex = -1;
+  //      }
     };
 
     class fieldTag
@@ -279,7 +297,6 @@ namespace NifGenerator
     class FieldStorageTag
     {
     public:
-        InnerTagIndex IndexTracker;
         std::string Desc;
         /// <summary>
         /// The argument fields of the xml tag
@@ -329,7 +346,6 @@ namespace NifGenerator
     /// </summary>
     class GeneralTag
     {public:
-        InnerTagIndex IndexTracker;
         std::string Desc;
         /// <summary>
         /// The argument fields of the xml tag
@@ -443,6 +459,139 @@ namespace NifGenerator
         /// The module tag xml data (not really needed for generation of c++ files)
         /// </summary>
         std::vector<GeneralTag> moduleData;
+		
+		int EntryNodeIndex = -1;
+		std::string EntryTagName = "";
+		//First name inside tag becomes CurrentTag
+		std::string CurrentTag = "";
+		
+		InnerTagIndex CurrentTagIndex;
+
+        void AddSelfContainedTag(std::string tagName)
+        {
+            switch (CurrentTagIndex.CurrentIndexType)
+            {
+            case TagIndexType::TagIsEntryLevel:
+            {
+            }
+            break;
+            case TagIndexType::TagIsPrimary:
+            {
+            }
+            break;
+            case TagIndexType::ParentTagIsPrimary:
+            {
+            }
+            break;
+            case TagIndexType::ParentTagIsSecondary:
+            {
+            }
+            break;
+            default://Placeholder(should not run unless make error on setting type)
+                break;
+            }
+        }
+
+        void AddTagNodeWithinLast(std::string tagName)
+        {
+			//if (EntryTagName == "compound")
+			//{
+			//}
+			//else if (EntryTagName == "enum")
+			//{
+			//}
+			//else if (EntryTagName == "bitflags")
+			//{
+			//}
+			//else if (EntryTagName == "bitfield")
+			//{
+			//}
+			//else if (EntryTagName == "niobject")
+			//{
+			//}
+			//else if (EntryTagName == "version")
+			//{
+			//}
+			//else if (EntryTagName == "token")
+			//{
+			//}
+			//else if (EntryTagName == "module")
+			//{
+			//}
+			//else if (EntryTagName == "basic")
+			//{
+			//}
+            switch(CurrentTagIndex.CurrentIndexType)
+            {
+            case TagIndexType::TagIsEntryLevel:
+            {
+            }
+                break;
+            case TagIndexType::TagIsPrimary:
+            {
+            }
+                break;
+            case TagIndexType::ParentTagIsPrimary:
+            {
+            }
+                break;
+            case TagIndexType::ParentTagIsSecondary:
+            {
+            }
+                break;
+            default://Placeholder(should not run unless make error on setting type)
+                break;
+            }
+        }
+		
+        void ExitTagNode(std::string tagName)
+        {
+			//if (EntryTagName == "compound")
+			//{
+			//}
+			//else if (EntryTagName == "enum")
+			//{
+			//}
+			//else if (EntryTagName == "bitflags")
+			//{
+			//}
+			//else if (EntryTagName == "bitfield")
+			//{
+			//}
+			//else if (EntryTagName == "niobject")
+			//{
+			//}
+			//else if (EntryTagName == "version")
+			//{
+			//}
+			//else if (EntryTagName == "token")
+			//{
+			//}
+			//else if (EntryTagName == "module")
+			//{
+			//}
+			//else if (EntryTagName == "basic")
+			//{
+			//}
+            switch (CurrentTagIndex.CurrentIndexType)
+            {
+            case TagIndexType::TagIsPrimary:
+            {
+                CurrentTagIndex.CurrentIndexType = TagIndexType::TagIsEntryLevel;
+            }
+            break;
+            case TagIndexType::ParentTagIsPrimary:
+            {
+            }
+            break;
+            case TagIndexType::ParentTagIsSecondary:
+            {
+            }
+            break;
+            default://Other code deals with exiting EntryTag
+                break;
+            }
+        }
 
         /// <summary>
         /// Generate XML files based on loaded content 
@@ -472,18 +621,11 @@ namespace NifGenerator
             //Blank Element for added basic tags, tokens, and modules
             GeneralTag NewGeneralTag;
 
-
             char LineChar;
             bool InsideXMLComment = false;
             //If false, then inside tag-content types instead of tags
             bool InsideTag = false;
             std::string ScanBuffer = "";
-
-            //First name inside tag becomes CurrentTag
-            std::string CurrentTag = "";
-            unsigned int CurrentNodeIndex = 0;
-            //0=NormalTag; 1:SelfContainedTag; 2:TagIsClosing; 3:XMLVersionTag
-            int TagType = 0;
 
             bool ScanningArgData = false;
             std::string ArgElement;
@@ -492,16 +634,10 @@ namespace NifGenerator
 
             bool PotentialComment = false;
             bool InsideParenthesis = false;
-            //0 = Not Scanning TagContent Yet: 1 = Potential SingleLine TagContent: 2 Multi-line target content
-            short TagContentStage = 0;
 
             //Current state of code loading for certain sections of code
             size_t Stage = 0;
 
-            TagDepthTree TagDepth;
-
-            int EntryNodeIndex = -1;
-            std::string EntryTagName = "";
             bool InsideClosingTag = false;
 
             bool StartedTagRead = false;
@@ -612,39 +748,14 @@ namespace NifGenerator
                             {
                                 LoadedXmlDataOrder.push_back(DataOrderInfo(EntryTagName,EntryNodeIndex));
                                 EntryTagName.clear();
+								CurrentTagIndex.clear();
                             }
                             else//Exiting inner tag 
                             {
-                                if (EntryTagName == "compound")
-                                {
-                                }
-                                else if (EntryTagName == "enum")
-                                {
-                                }
-                                else if (EntryTagName == "bitflags")
-                                {
-                                }
-                                else if (EntryTagName == "bitfield")
-                                {
-                                }
-                                else if (EntryTagName == "niobject")
-                                {
-                                }
-                                else if (EntryTagName == "version")
-                                {
-                                }
-                                else if (EntryTagName == "token")
-                                {
-                                }
-                                else if (EntryTagName == "module")
-                                {
-                                }
-                                else if (EntryTagName == "basic")
-                                {
-                                }
+								ExitTagNode(CurrentTag);
                             }
                             CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                            TagContentStage = 0;
+                            Stage = 0;
                             InsideClosingTag = false; InsideTag = false;
                         }
                     }
@@ -675,6 +786,8 @@ namespace NifGenerator
                                 ArgBuffer.clear();
                                 if (ScanBuffer == "/")//Self-Contained Tag
                                     EntryTagName.clear();
+                                else
+                                    CurrentTagIndex.clear();//Entering EntryTag that can possibly hold others within
                             }
                             else
                             {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
@@ -696,10 +809,6 @@ namespace NifGenerator
                                 //else if (EntryTagName == "token")
                                 //{
                                 //}
-                                if (ScanBuffer == "/")//Self-Contained Tag
-                                {
-
-                                }
                             }
                             InsideTag = false;
                         }
@@ -745,8 +854,6 @@ namespace NifGenerator
                                         moduleData.push_back(NewGeneralTag);
                                     else if (EntryTagName == "basic")
                                         basicData.push_back(NewGeneralTag);
-                                    if (!TagDepth.empty())
-                                        TagDepth.clear();
                                     //Start Generic Argument Scanning for those with ArgData field (manual code for the others)
                                     if(EntryTagName=="compound"||EntryTagName=="niobject"|| EntryTagName == "token"|| EntryTagName == "module"|| EntryTagName == "basic")
                                         ScanningArgData = true; Stage = 0;
@@ -771,6 +878,10 @@ namespace NifGenerator
                                     //    moduleData.back().push_back(NewGeneralTag);
                                     //else if (EntryTagName == "basic")
                                     //    basicData.back().push_back(NewGeneralTag);
+                                    if (ScanBuffer == "/")//Self-Contained Tag
+                                        AddSelfContainedTag(CurrentTag);
+                                    else
+                                        AddTagNodeWithinLast(CurrentTag);
                                     ScanningArgData = true; Stage = 0;
                                 }
                                 CurrentTag = ScanBuffer;
@@ -859,12 +970,12 @@ namespace NifGenerator
                                     ScanBuffer += LineChar;
                                 }
                             }
-                            else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
-                            {
-                                CurrentTag = ScanBuffer;
-                                ScanBuffer.clear();
-                                ScanningArgData = true; Stage = 0;
-                            }
+                            //else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
+                            //{
+                            //    CurrentTag = ScanBuffer;
+                            //    ScanBuffer.clear();
+                            //    ScanningArgData = true; Stage = 0;
+                            //}
                             else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
                             {
                                 ScanBuffer += LineChar;
@@ -945,17 +1056,8 @@ namespace NifGenerator
         }
         void GenerateDebugOutput()
         {
-            for (std::vector<VersionInfo>::iterator CurrentVal = versionData.begin(), LastVal = versionData.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (std::vector<DataOrderInfo>::iterator CurrentVal = LoadedXmlDataOrder.begin(), LastVal = LoadedXmlDataOrder.end(); CurrentVal != LastVal; ++CurrentVal)
             {
-
-            }
-            for (std::vector<BitFieldTag>::iterator CurrentVal = bitFieldData.begin(), LastVal = bitFieldData.end(); CurrentVal != LastVal; ++CurrentVal)
-            {
-
-            }
-            for (std::vector<FieldStorageTag>::iterator CurrentVal = niObjectData.begin(), LastVal = niObjectData.end(); CurrentVal != LastVal; ++CurrentVal)
-            {
-
             }
         }
         void GenerateFiles()
