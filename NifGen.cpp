@@ -225,6 +225,34 @@ namespace NifGenerator
         }
     };
 
+    class InnerTagIndex
+    {
+        bool InsideInnerTag;
+        int PrimaryIndex;
+        int SecondaryIndex;
+        bool ParentTagWasPrimary;
+        int ParentIndex;
+        int CurrentIndex;
+        void clear()
+        {
+            InsideInnerTag = false;
+            PrimaryIndex = -1;
+            SecondaryIndex = -1;
+            ParentTagWasPrimary = true;
+            ParentIndex = -1;
+            CurrentIndex = -1;
+        }
+        InnerTagIndex()
+        {
+            InsideInnerTag = false;
+            PrimaryIndex = -1;
+            SecondaryIndex = -1;
+            ParentTagWasPrimary = true;
+            ParentIndex = -1;
+            CurrentIndex = -1;
+        }
+    };
+
     class fieldTag
     {
     public:
@@ -248,6 +276,7 @@ namespace NifGenerator
     class FieldStorageTag
     {
     public:
+        InnerTagIndex IndexTracker;
         std::string Desc;
         /// <summary>
         /// The argument fields of the xml tag
@@ -283,6 +312,7 @@ namespace NifGenerator
     /// </summary>
     class GeneralTag
     {public:
+        InnerTagIndex IndexTracker;
         std::string Desc;
         /// <summary>
         /// The argument fields of the xml tag
