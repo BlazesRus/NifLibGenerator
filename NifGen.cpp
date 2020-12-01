@@ -24,10 +24,11 @@ namespace NifGenerator
     /// <summary>
     /// Class NifVersion.(summaries from nif.xml)
     /// </summary>
-    class NifVersion
+    class VersionInfo
     {
+    public:
         /// <summary>
-        /// "VX_X_X_X": The unique identifier for this version. Can be used to generate C-style enums, etc.
+        /// "VX_X_X_X": The unique identifier for this version. Can be used to generate C-style enumerations, etc.
         /// </summary>
         std::string id;
         /// <summary>
@@ -66,12 +67,47 @@ namespace NifGenerator
         /// Note: A unique game name should only have `{{}}` around it once.
         /// </summary>
         std::string Content;
-    };
 
-    //class BasicTypeTag
-    //{
-    //    std::string Desc;
-    //};
+        //VersionInfo(ArgList targetArgs)
+        //{
+        //    //std::string ArgContentBuffer;
+        //    if (targetArgs.HasKey("id"))
+        //        id = targetArgs["id"].back().Value;
+        //    else
+        //        id = "";
+        //    if (targetArgs.HasKey("num"))
+        //        num = targetArgs["num"].back().Value;
+        //    else
+        //        num = "";
+        //    if (targetArgs.HasKey("supported"))
+        //        supported = targetArgs["supported"].back().Value == "false" ? false : true;
+        //    else
+        //        supported = true;
+        //    if (targetArgs.HasKey("supported"))
+        //        supported = targetArgs["supported"].back().Value == "false" ? false : true;
+        //    else
+        //        supported = true;
+        //    if (targetArgs.HasKey("user"))
+        //        user = (std::vector<int>)targetArgs["user"];
+        //    if (targetArgs.HasKey("bsver"))
+        //        bsver = (std::vector<int>)targetArgs["bsver"];
+        //    if (targetArgs.HasKey("custom"))
+        //        custom = targetArgs["custom"].back().Value == "true" ? true : false;
+        //    else
+        //        custom = false;
+        //    if (targetArgs.HasKey("ext"))
+        //        ext = (std::vector<std::string>)targetArgs["ext"];
+        //}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VersionInfo"/> class.
+        /// </summary>
+        VersionInfo()
+        {
+            supported = true;
+            custom = false;
+        }
+    };
 
     ///// <summary>
     ///// Storage type of target value
@@ -91,24 +127,12 @@ namespace NifGenerator
     //    boolType,//(bool)A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.(boolean="true" integral="true" countable="false")
     //};
 
-    //class BasicTypeOrOther
-    //{
-    //    /// <summary>
-    //    /// The storage type if OtherType is empty()
-    //    /// </summary>
-    //    BasicType StorageType;
-
-    //    /// <summary>
-    //    /// The storage type if it's not empty()
-    //    /// </summary>
-    //    std::string OtherType;
-    //};
-
     /// <summary>
     /// Class SmallValPlusDesc.
     /// </summary>
     class SmallValPlusDesc
     {
+    public:
         short Value;
         std::string Desc;
     };
@@ -118,20 +142,31 @@ namespace NifGenerator
     /// </summary>
     class EnumTag
     {
+    public:
         std::string Desc;
-        tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
+        //Argument Fields
+        std::string Name;
         std::string Prefix;
         std::string StorageType;
         std::vector<std::string> versionsUsed;
-        EnumTag(std::string descVal, std::string storeType = "uint")
+        
+        /// <summary>
+        /// The flag values
+        /// </summary>
+        tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
+
+        EnumTag()
         {
-            Desc = descVal;
-            StorageType = storeType;
+            Desc = "";
+            Prefix = "";
         }
         void AddOption(std::string optionName, short val)
         {
             FlagValues.insert_or_assign(optionName, val);
         }
+        //EnumTag(ArgList targetArgs)
+        //{
+        //}
     };
 
     /// <summary>
@@ -139,14 +174,21 @@ namespace NifGenerator
     /// </summary>
     class BitFlag
     {
+    public:
         std::string Desc;
+        //Argument Fields
+        std::string Name;
         std::string StorageType;
+
+        /// <summary>
+        /// The option flag values
+        /// </summary>
         tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
-        BitFlag(std::string descVal, std::string storeType="uint")
-        {
-            Desc = descVal;
-            StorageType = storeType;
-        }
+        /// <summary>
+        /// Adds the option.
+        /// </summary>
+        /// <param name="optionName">Name of the option.</param>
+        /// <param name="val">The value.</param>
         void AddOption(std::string optionName, short val)
         {
             FlagValues.insert_or_assign(optionName, val);
@@ -155,6 +197,7 @@ namespace NifGenerator
 
     class memberTag
     {
+    public:
         //int width;
 
         /// <summary>
@@ -168,12 +211,23 @@ namespace NifGenerator
     /// </summary>
     class BitFieldTag
     {
+    public:
         std::string Desc;
+        //Argument Fields
+        std::string Name;
+        /// <summary>
+        /// The member inner tags
+        /// </summary>
         std::vector<memberTag> memberTags;
+        BitFieldTag()
+        {
+            Desc = "";
+        }
     };
 
     class fieldTag
     {
+    public:
         /// <summary>
         /// TagContent of the tag(before inner xml tag(s))
         /// </summary>
@@ -193,6 +247,7 @@ namespace NifGenerator
     /// </summary>
     class FieldStorageTag
     {
+    public:
         std::string Desc;
         /// <summary>
         /// The argument fields of the xml tag
@@ -210,6 +265,7 @@ namespace NifGenerator
 
     class OtherTagMember
     {
+    public:
         std::string TagName;
         std::string Desc;
         /// <summary>
@@ -222,32 +278,11 @@ namespace NifGenerator
         std::vector<int> ChildTags;
     };
 
-    ///// <summary>
-    ///// Class OtherTag (vector used instead of map based since don't need to be able to change the tags after load them).
-    ///// </summary>
-    //class OtherTag
-    //{
-    //    std::string EntryTagName;
-    //    std::string Desc;
-    //    /// <summary>
-    //    /// The argument fields of the xml tag
-    //    /// </summary>
-    //    ArgList ArgFields;
-    //    /// <summary>
-    //    /// The primary tags
-    //    /// </summary>
-    //    std::vector<OtherTagMember> PrimaryTags;
-    //    /// <summary>
-    //    /// Child tags of PrimaryTags and other InnerTags
-    //    /// </summary>
-    //    std::vector<OtherTagMember> InnerTags;
-    //};
-
     /// <summary>
     /// Store other specific entry level tags with this (such as basic tags)
     /// </summary>
     class GeneralTag
-    {
+    {public:
         std::string Desc;
         /// <summary>
         /// The argument fields of the xml tag
@@ -283,16 +318,31 @@ namespace NifGenerator
                 Index = indexPosition;
             }
         };
+        /// <summary>
+        /// Strings to string vector.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>vector(std::string)</returns>
+        std::vector<std::string> StringToStringVector(std::string value)
+        {
+
+        }
+
+        /// <summary>
+        /// Strings to int vector.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>vector(int)</returns>
+        std::vector<int> StringToIntVector(std::string value)
+        {
+
+        }
     public:
         /// <summary>
         /// The loaded XML data order(EntryTagName, Index in Vector);
         /// Only needed for regeneration of xml file(mainly for debugging purposes) 
         /// </summary>
         std::vector<DataOrderInfo> LoadedXmlDataOrder;
-        ///// <summary>
-        ///// The other data(Shouldn't be needed right now)
-        ///// </summary>
-        //std::vector<OtherTag> otherData;
 
         /// <summary>
         /// The compound tag xml data
@@ -307,12 +357,12 @@ namespace NifGenerator
         /// <summary>
         /// The bitflags tag xml data
         /// </summary>
-        std::vector<BitFlag> enumData;
+        std::vector<BitFlag> bitflagsData;
 
         /// <summary>
         /// The version tag xml data
         /// </summary>
-        std::vector<NifVersion> versionData;
+        std::vector<VersionInfo> versionData;
 
         /// <summary>
         /// The bitfield tag xml data
@@ -354,6 +404,20 @@ namespace NifGenerator
         /// <returns>bool</returns>
         bool LoadXML(std::string FilePath)
         {
+            //Blank Element for added Compounds and NiObjects
+            FieldStorageTag NewFieldStorage;
+            //Blank Element for added Enum
+            EnumTag NewEnum;
+            //Blank Element for added BitFlag
+            BitFlag NewBitFlag;
+            //Blank Element for added BitField
+            BitFieldTag NewBitField;
+            //Blank Element for added Version
+            VersionInfo NewVersionInfo;
+            //Blank Element for added basic tags, tokens, and modules
+            GeneralTag NewGeneralTag;
+
+
             char LineChar;
             bool InsideXMLComment = false;
             //If false, then inside tag-content types instead of tags
@@ -492,33 +556,6 @@ namespace NifGenerator
                         {
                             if (CurrentTag == EntryTagName)//Exiting entry tag
                             {
-                                //if (EntryTagName == "compound")
-                                //{
-                                //}
-                                //else if (EntryTagName == "enum")
-                                //{
-                                //}
-                                //else if (EntryTagName == "bitflags")
-                                //{
-                                //}
-                                //else if (EntryTagName == "bitfield")
-                                //{
-                                //}
-                                //else if (EntryTagName == "niobject")
-                                //{
-                                //}
-                                //else if (EntryTagName == "version")
-                                //{
-                                //}
-                                //else if (EntryTagName == "token")
-                                //{
-                                //}
-                                //else if (EntryTagName == "module")
-                                //{
-                                //}
-                                //else if (EntryTagName == "basic")
-                                //{
-                                //}
                                 LoadedXmlDataOrder.push_back(DataOrderInfo(EntryTagName,EntryNodeIndex));
                                 EntryTagName.clear();
                             }
@@ -559,75 +596,50 @@ namespace NifGenerator
                     }
                     else if (InsideTag)
                     {
-                        if (LineChar == '>')
+                        if (LineChar == '>')//End of a Tag detected
                         {
                             if (EntryTagName.empty())
                             {
-                                if (CurrentTag == "compound")
-                                {
-                                }
-                                else if (CurrentTag == "enum")
-                                {
-                                }
-                                else if (CurrentTag == "bitflags")
-                                {
-                                }
-                                else if (CurrentTag == "bitfield")
-                                {
-                                }
-                                else if (CurrentTag == "niobject")
-                                {
-                                }
-                                else if (CurrentTag == "version")
-                                {
-                                }
-                                else if (CurrentTag == "token")
-                                {
-                                }
-                                else if (CurrentTag == "module")
-                                {
-                                }
-                                else if (CurrentTag == "basic")
-                                {
-                                }
-                                else//OtherTag
-                                {
-                                }
-                                EntryTagName = CurrentTag;//Going to assuming that all entry tags have at least one argument field;All Entry Tags have arguments in current format(otherwise current code breaks)
+                                if (EntryTagName == "compound")
+                                    compoundData.back().ArgFields = ArgBuffer;
+                                //else if (EntryTagName == "enum")
+                                //    enumData.back().ArgFields = ArgBuffer;
+                                //else if (EntryTagName == "bitflags")
+                                //    bitflagsData.back().ArgFields = ArgBuffer;
+                                //else if (EntryTagName == "bitfield")
+                                //    bitFieldData.back().ArgFields = ArgBuffer;
+                                else if (EntryTagName == "niobject")
+                                    niObjectData.back().ArgFields = ArgBuffer;
+                                //else if (EntryTagName == "version")
+                                //    versionData.push_back(ArgBuffer);
+                                else if (EntryTagName == "token")
+                                    tokenData.back().ArgFields = ArgBuffer;
+                                else if (EntryTagName == "module")
+                                    moduleData.back().ArgFields = ArgBuffer;
+                                else if (EntryTagName == "basic")
+                                    basicData.back().ArgFields = ArgBuffer;
+                                ArgBuffer.clear();
                             }
                             else
                             {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
-                                if (EntryTagName == "compound")
-                                {
-                                }
-                                else if (EntryTagName == "enum")
-                                {
-                                }
-                                else if (EntryTagName == "bitflags")
-                                {
-                                }
-                                else if (EntryTagName == "bitfield")
-                                {
-                                }
-                                else if (EntryTagName == "niobject")
-                                {
-                                }
-                                else if (EntryTagName == "version")
-                                {
-                                }
-                                else if (EntryTagName == "token")
-                                {
-                                }
-                                else if (EntryTagName == "module")
-                                {
-                                }
-                                else if (EntryTagName == "basic")
-                                {
-                                }
-                                else//OtherTag
-                                {
-
-                                }
+                                //if (EntryTagName == "compound")
+                                //{
+                                //}
+                                //else if (EntryTagName == "enum")
+                                //{
+                                //}
+                                //else if (EntryTagName == "bitflags")
+                                //{
+                                //}
+                                //else if (EntryTagName == "bitfield")
+                                //{
+                                //}
+                                //else if (EntryTagName == "niobject")
+                                //{
+                                //}
+                                //else if (EntryTagName == "token")
+                                //{
+                                //}
                             }
                         }
                         else if (CurrentTag.empty())
@@ -650,12 +662,56 @@ namespace NifGenerator
                             }
                             else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
                             {
+                                if (EntryTagName.empty())
+                                {
+                                    EntryTagName = ScanBuffer;
+                                    //Add Blank data at default values
+                                    if (EntryTagName == "compound")
+                                        compoundData.push_back(NewFieldStorage);
+                                    else if (EntryTagName == "enum")
+                                        enumData.push_back(NewEnum);
+                                    else if (EntryTagName == "bitflags")
+                                        bitflagsData.push_back(NewBitFlag);
+                                    else if (EntryTagName == "bitfield")
+                                        bitFieldData.push_back(NewBitField);
+                                    else if (EntryTagName == "niobject")
+                                        niObjectData.push_back(NewFieldStorage);
+                                    else if (EntryTagName == "version")
+                                        versionData.push_back(NewVersionInfo);
+                                    else if (EntryTagName == "token")
+                                        tokenData.push_back(NewGeneralTag);
+                                    else if (EntryTagName == "module")
+                                        moduleData.push_back(NewGeneralTag);
+                                    else if (EntryTagName == "basic")
+                                        basicData.push_back(NewGeneralTag);
+                                    //Start Generic Argument Scanning for those with ArgData field (manual code for the others)
+                                    if(EntryTagName=="compound"||EntryTagName=="niobject"|| EntryTagName == "token"|| EntryTagName == "module"|| EntryTagName == "basic")
+                                        ScanningArgData = true; Stage = 0;
+                                }
+                                else
+                                {//Starting inner tag
+                                    //if (EntryTagName == "compound")
+                                    //    compoundData.back()//.push_back(NewFieldStorage);
+                                    //else if (EntryTagName == "enum")
+                                    //    enumData.back().push_back(NewEnum);
+                                    //else if (EntryTagName == "bitflags")
+                                    //    bitflagsData.back().push_back(NewBitFlag);
+                                    //else if (EntryTagName == "bitfield")
+                                    //    bitFieldData.back().push_back(NewBitField);
+                                    //else if (EntryTagName == "niobject")
+                                    //    niObjectData.back().push_back(NewFieldStorage);
+                                    //else if (EntryTagName == "version")
+                                    //    versionData.back().push_back(NewVersionInfo);
+                                    //else if (EntryTagName == "token")
+                                    //    tokenData.back().push_back(NewGeneralTag);
+                                    //else if (EntryTagName == "module")
+                                    //    moduleData.back().push_back(NewGeneralTag);
+                                    //else if (EntryTagName == "basic")
+                                    //    basicData.back().push_back(NewGeneralTag);
+                                    ScanningArgData = true; Stage = 0;
+                                }
                                 CurrentTag = ScanBuffer;
                                 ScanBuffer.clear();
-                                //if (LineChar != '\\')
-                                //{
-                                //    ScanningArgData = true; Stage = 0;
-                                //}
                             }
                             else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
                             {
@@ -663,6 +719,74 @@ namespace NifGenerator
                             }
                         }
                         //------------------Scanning Argument Field/Values-------------------------------
+                        else if(CurrentTag==EntryTagName)
+                        {
+                            if(LineChar=='=')
+                            {
+                                ArgElement = ScanBuffer; ScanBuffer.clear();
+                                Stage = 1;
+                            }
+                            else if(Stage==1)
+                            {
+                                if(LineChar=='\"')
+                                {
+                                    Stage = 2;
+                                }
+                            }
+                            else if(Stage==2)
+                            {
+                                if (LineChar == '\"')
+                                {
+                                    if (EntryTagName == "enum")
+                                    {
+                                        if (ArgElement == "name")
+                                        {
+
+                                        }
+                                    }
+                                    else if (EntryTagName == "bitflags")
+                                    {
+                                        if (ArgElement == "name")
+                                        {
+
+                                        }
+                                    }
+                                    else if (EntryTagName == "bitfield")
+                                    {
+                                        if (ArgElement == "name")
+                                        {
+
+                                        }
+                                    }
+                                    else if (EntryTagName == "version")
+                                    {
+                                        if (ArgElement == "id")
+                                            versionData.back().id = ScanBuffer;
+                                        else if (ArgElement == "num")
+                                            versionData.back().num = ScanBuffer;
+                                        else if (ArgElement == "supported")
+                                            versionData.back().supported = ScanBuffer == "false" ? false : true;
+                                        else if (ArgElement == "custom")
+                                            versionData.back().custom = ScanBuffer == "true" ? true : false;
+                                        else if (ArgElement == "user")
+                                            versionData.back().user = StringToIntVector(ScanBuffer);
+                                        else if (ArgElement == "bsver")
+                                            versionData.back().bsver = StringToIntVector(ScanBuffer);
+                                        else if (ArgElement == "ext")
+                                            versionData.back().ext = StringToStringVector(ScanBuffer);
+                                    }
+                                    Stage = 0; ScanBuffer.clear();
+                                }
+                                else
+                                {
+                                    ScanBuffer += LineChar;
+                                }
+                            }
+                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
+                            {
+                                ScanBuffer += LineChar;
+                            }
+                        }
                         else
                         {
                             if (ScanBuffer.empty())
@@ -674,12 +798,9 @@ namespace NifGenerator
                             }
                             else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
                             {
-                                //CurrentTag = ScanBuffer;
+                                CurrentTag = ScanBuffer;
                                 ScanBuffer.clear();
-                                //if (LineChar != '\\')
-                                //{
-                                //    ScanningArgData = true; Stage = 0;
-                                //}
+                                ScanningArgData = true; Stage = 0;
                             }
                             else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
                             {
@@ -700,81 +821,6 @@ namespace NifGenerator
                             ScanBuffer += LineChar;
                         }
                     }
-                    /*
-                                            if (ScanBuffer == "/" && LineChar == '>')
-                                            {
-                                                switch (TagType)
-                                                {
-                                                case 1://SelfContainedTag
-                                                    NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);
-                                                    break;
-                                                case 3://XMLVersionTag(Same as SelfContained Tag except for ? in front and such)
-                                                    break;
-                                                default://TagIsClosing(TagType==2)
-                                                        //Decrease TagDepth
-                                                    TagDepth.RemoveLastTagMatch(CurrentTag);
-                                                    break;
-                                                }
-                                                CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                                                InsideTag = false; TagContentStage = 0;
-                                            }
-                                            else if (LineChar == '>')
-                                            {
-                                                CurrentNodeIndex = NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);//Index of Last Entered Node is it's parent
-                                                if (InsideClassNodeSection && CurrentClassNodeIndex == 0 && CurrentTag == hkobject && ArgBuffer.HasKey(Signature))
-                                                {
-                                                    CurrentClassNodeIndex = CurrentNodeIndex;
-                                                    CurrentNodeName = ArgBuffer["Name"][0];
-                                                    NodeLinks.Add(CurrentNodeName, CurrentClassNodeIndex);
-                                                }
-                                                //Increase TagDepth
-                                                CurrentNodeName = CurrentTag;
-                                                CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                                                InsideTag = false; TagContentStage = 0;
-                                            }
-                                            else if (CurrentTag.empty())
-                                            {
-                                                if (!ScanBuffer.empty())
-                                                {
-                                                    if (LineChar == '!')//Detecting potential Commented Out Parts
-                                                    {
-                                                        PotentialComment = true;
-                                                    }
-                                                    else if (LineChar == ' ' || LineChar == '/t')
-                                                    {
-                                                        CurrentTag = ScanBuffer;
-                                                    }
-                                                    else
-                                                    {
-                                                        ScanBuffer += LineChar;
-                                                    }
-                                                }
-                                                else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                                                {
-                                                    ScanBuffer += LineChar;
-                                                    if (LineChar != '\\')
-                                                    {
-                                                        ScanningArgData = true; Stage = 0;
-                                                    }
-                                                }
-                                            }
-                                            else if (TagContentStage > 0)
-                                            {
-                                            }
-                                            else
-                                            {
-                                                if (LineChar == '<')
-                                                {
-                                                    InsideTag = true;
-                                                }
-                                                else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                                                {
-                                                    ScanBuffer = LineChar;
-                                                    TagContentStage = 1;
-                                                }
-                                            }
-                                        }
-                    */
                 }
                 else
                 {
@@ -836,7 +882,7 @@ namespace NifGenerator
         }
         void GenerateDebugOutput()
         {
-            for (std::vector<NifVersion>::iterator CurrentVal = versionData.begin(), LastVal = versionData.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (std::vector<VersionInfo>::iterator CurrentVal = versionData.begin(), LastVal = versionData.end(); CurrentVal != LastVal; ++CurrentVal)
             {
 
             }
@@ -844,7 +890,7 @@ namespace NifGenerator
             {
 
             }
-            for (std::vector<niObjectTag>::iterator CurrentVal = niObjectData.begin(), LastVal = niObjectData.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (std::vector<FieldStorageTag>::iterator CurrentVal = niObjectData.begin(), LastVal = niObjectData.end(); CurrentVal != LastVal; ++CurrentVal)
             {
 
             }

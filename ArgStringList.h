@@ -10,33 +10,38 @@
 
 class ArgValue
 {
-private:
-    ArgValue()
-    {
-    }
 public:
     std::string Value;
-    LONG ArgPos;
+    int ArgPos;
+    ArgValue()
+    {
+        Value = "";
+        ArgPos = 0;
+    }
     explicit operator std::string()
     {
         return Value;
     }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ArgValue"/> class.
+    /// </summary>
+    /// <param name="value">The value.</param>
     ArgValue(std::string value)
     {
         Value = value;
         ArgPos = 0;
     }
-    ArgValue(CString value)
-    {
-        Value = value;
-        ArgPos = 0;
-    }
+    //ArgValue(CString value)
+    //{
+    //    Value = value;
+    //    ArgPos = 0;
+    //}
 };
 
 class ArgStringList : public std::vector<ArgValue>
 {
 public:
-    LONG ArgStart;
+    int ArgStart;
     ArgStringList()
     {
         ArgStart = 0;
@@ -98,10 +103,31 @@ public:
             {
                 ConvertedString += ",";
             }
-            ConvertedString += (std::string) * Arg;
+            ConvertedString += Arg->Value;
         }
         ConvertedString += "\"";
         return ConvertedString;
+    }
+
+    explicit operator std::vector<std::string>()
+    {
+        std::vector<std::string> ConvertedVector;
+        for (vector<ArgValue>::iterator Arg = this->begin(), StartIndex = Arg, EndIndex = this->end(); Arg != EndIndex; ++Arg)
+        {
+            ConvertedVector.push_back(Arg->Value);
+        }
+        return ConvertedVector;
+    }
+
+
+    explicit operator std::vector<int>()
+    {
+        std::vector<int> ConvertedVector;
+        for (vector<ArgValue>::iterator Arg = this->begin(), StartIndex = Arg, EndIndex = this->end(); Arg != EndIndex; ++Arg)
+        {
+            ConvertedVector.push_back(VariableConversionFunctions::ReadIntFromString(Arg->Value));
+        }
+        return ConvertedVector;
     }
 };
 #endif
