@@ -426,7 +426,6 @@ namespace NifGenerator
 
             //First name inside tag becomes CurrentTag
             std::string CurrentTag = "";
-            std::string CurrentNodeName = "";
             unsigned int CurrentNodeIndex = 0;
             //0=NormalTag; 1:SelfContainedTag; 2:TagIsClosing; 3:XMLVersionTag
             int TagType = 0;
@@ -598,7 +597,7 @@ namespace NifGenerator
                     {
                         if (LineChar == '>')//End of a Tag detected
                         {
-                            if (EntryTagName.empty())
+                            if (EntryTagName==CurrentTag)
                             {
                                 if (EntryTagName == "compound")
                                     compoundData.back().ArgFields = ArgBuffer;
@@ -619,6 +618,8 @@ namespace NifGenerator
                                 else if (EntryTagName == "basic")
                                     basicData.back().ArgFields = ArgBuffer;
                                 ArgBuffer.clear();
+                                if (ScanBuffer == "/")//Self-Contained Tag
+                                    EntryTagName.clear();
                             }
                             else
                             {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
@@ -640,7 +641,12 @@ namespace NifGenerator
                                 //else if (EntryTagName == "token")
                                 //{
                                 //}
+                                if (ScanBuffer == "/")//Self-Contained Tag
+                                {
+
+                                }
                             }
+                            InsideTag = false;
                         }
                         else if (CurrentTag.empty())
                         {
