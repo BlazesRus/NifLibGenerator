@@ -3,20 +3,20 @@
 
 #include <iostream>
 
-#include "AltNum\MediumDec.hpp"
-using MediumDec = BlazesRusCode::MediumDec;
+//#include "AltNum\MediumDec.hpp"
+//using MediumDec = BlazesRusCode::MediumDec;
 
-#include "AltNum\AltNumDebug.hpp"
-#include "AltNum\FloatingOperations.hpp"
-#include "Databases\MediumDecFormula.hpp"
+//#include "AltNum\AltNumDebug.hpp"
+//#include "AltNum\FloatingOperations.hpp"
+//#include "Databases\MediumDecFormula.hpp"
+//using MediumDecFormula = BlazesRusCode::MediumDecFormula;
+
 #include "tsl/ordered_map.h"
 #include "ArgStringList.h"
 #include "ArgList.h"
 
 #include <iostream>
 #include <fstream>
-
-using MediumDecFormula = BlazesRusCode::MediumDecFormula;
 
 namespace NifGenerator
 {
@@ -196,13 +196,17 @@ namespace NifGenerator
 
     class memberTag
     {
-    public:
         //int width;
-
+    public:
         /// <summary>
         /// The argument fields of the xml tag(could also store as separate specific arg storage later)
         /// </summary>
         ArgList ArgFields;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="memberTag"/> class.
+        /// </summary>
+        memberTag() {}
     };
 
     /// <summary>
@@ -218,6 +222,9 @@ namespace NifGenerator
         /// The member inner tags
         /// </summary>
         std::vector<memberTag> memberTags;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BitFieldTag"/> class.
+        /// </summary>
         BitFieldTag()
         {
             Desc = "";
@@ -235,41 +242,34 @@ namespace NifGenerator
     class InnerTagIndex
     {
     public:
+        /// <summary>
+        /// The current index type
+        /// </summary>
         TagIndexType CurrentIndexType;
-		int ParentIndex;
-		int CurrentIndex;
-		void clear()
-		{
+        /// <summary>
+        /// The parent index
+        /// </summary>
+        int ParentIndex;
+        /// <summary>
+        /// The current index
+        /// </summary>
+        int CurrentIndex;
+        /// <summary>
+        /// Clears this instance.
+        /// </summary>
+        void clear()
+        {
             CurrentIndexType = TagIndexType::TagIsEntryLevel;
-		}
-		InnerTagIndex()
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InnerTagIndex"/> class.
+        /// </summary>
+        InnerTagIndex()
         {
             CurrentIndexType = TagIndexType::TagIsEntryLevel;
             ParentIndex = 0;
             CurrentIndex = 0;
-		}
-  //      bool InsideInnerTag;
-  //      int PrimaryIndex;
-  //      int SecondaryIndex;
-  //      bool ParentTagWasPrimary;
-  //      void clear()
-  //      {
-  //          InsideInnerTag = false;
-  //          PrimaryIndex = -1;
-  //          SecondaryIndex = -1;
-  //          ParentTagWasPrimary = true;
-  //          ParentIndex = -1;
-  //          CurrentIndex = -1;
-  //      }
-  //      InnerTagIndex()
-  //      {
-  //          InsideInnerTag = false;
-  //          PrimaryIndex = -1;
-  //          SecondaryIndex = -1;
-  //          ParentTagWasPrimary = true;
-  //          ParentIndex = -1;
-  //          CurrentIndex = -1;
-  //      }
+        }
     };
 
     class fieldTag
@@ -287,6 +287,27 @@ namespace NifGenerator
         /// Vector of index references in InnerTag
         /// </summary>
         std::vector<int> ChildTags;
+        /// <summary>
+        /// The index of either inside PrimaryTags(if parent is PrimaryTag) or InnerTags
+        /// </summary>
+        int ParentIndex;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="fieldTag"/> class.
+        /// </summary>
+        fieldTag()
+        {
+            Desc = "";
+            ParentIndex = -1;
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="fieldTag"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        fieldTag(int parentIndex)
+        {
+            Desc = "";
+            ParentIndex = parentIndex;
+        }
     };
 
 
@@ -315,7 +336,7 @@ namespace NifGenerator
         /// </summary>
         FieldStorageTag()
         {
-
+            Desc = "";
         }
     };
 
@@ -333,11 +354,25 @@ namespace NifGenerator
         /// </summary>
         std::vector<int> ChildTags;
         /// <summary>
+        /// The index of either inside PrimaryTags(if parent is PrimaryTag) or InnerTags
+        /// </summary>
+        int ParentIndex;
+        /// <summary>
         /// Initializes a new instance of the <see cref="OtherTagMember"/> class.
         /// </summary>
         OtherTagMember()
         {
             Desc = "";
+            ParentIndex = -1;
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OtherTagMember"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        OtherTagMember(int parentIndex)
+        {
+            Desc = "";
+            ParentIndex = parentIndex;
         }
     };
 
@@ -459,13 +494,13 @@ namespace NifGenerator
         /// The module tag xml data (not really needed for generation of c++ files)
         /// </summary>
         std::vector<GeneralTag> moduleData;
-		
-		int EntryNodeIndex = -1;
-		std::string EntryTagName = "";
-		//First name inside tag becomes CurrentTag
-		std::string CurrentTag = "";
-		
-		InnerTagIndex CurrentTagIndex;
+        
+        int EntryNodeIndex = -1;
+        std::string EntryTagName = "";
+        //First name inside tag becomes CurrentTag
+        std::string CurrentTag = "";
+        
+        InnerTagIndex CurrentTagIndex;
 
         void AddSelfContainedTag(std::string tagName)
         {
@@ -494,45 +529,42 @@ namespace NifGenerator
 
         void AddTagNodeWithinLast(std::string tagName)
         {
-			//if (EntryTagName == "compound")
-			//{
-			//}
-			//else if (EntryTagName == "enum")
-			//{
-			//}
-			//else if (EntryTagName == "bitflags")
-			//{
-			//}
-			//else if (EntryTagName == "bitfield")
-			//{
-			//}
-			//else if (EntryTagName == "niobject")
-			//{
-			//}
-			//else if (EntryTagName == "version")
-			//{
-			//}
-			//else if (EntryTagName == "token")
-			//{
-			//}
-			//else if (EntryTagName == "module")
-			//{
-			//}
-			//else if (EntryTagName == "basic")
-			//{
-			//}
+            int ParentIndex = CurrentTagIndex.CurrentIndex;//Current Node will be parent of new node
+            //if (EntryTagName == "compound")
+            //    compoundData.back()//.push_back(NewFieldStorage);
+            //else if (EntryTagName == "enum")
+            //    enumData.back().push_back(NewEnum);
+            //else if (EntryTagName == "bitflags")
+            //    bitflagsData.back().push_back(NewBitFlag);
+            //else if (EntryTagName == "bitfield")
+            //    bitFieldData.back().push_back(NewBitField);
+            //else if (EntryTagName == "niobject")
+            //    niObjectData.back().push_back(NewFieldStorage);
+            //else if (EntryTagName == "version")
+            //    versionData.back().push_back(NewVersionInfo);
+            //else if (EntryTagName == "token")
+            //    tokenData.back().push_back(NewGeneralTag);
+            //else if (EntryTagName == "module")
+            //    moduleData.back().push_back(NewGeneralTag);
+            //else if (EntryTagName == "basic")
+            //    basicData.back().push_back(NewGeneralTag);
+
+            //Now assign new TagNode as current index and previous as the parent
             switch(CurrentTagIndex.CurrentIndexType)
             {
             case TagIndexType::TagIsEntryLevel:
             {
+                CurrentTagIndex.CurrentIndexType = TagIndexType::TagIsPrimary;
             }
                 break;
             case TagIndexType::TagIsPrimary:
             {
+                CurrentTagIndex.CurrentIndexType = TagIndexType::ParentTagIsPrimary;
             }
                 break;
             case TagIndexType::ParentTagIsPrimary:
             {
+                CurrentTagIndex.CurrentIndexType = TagIndexType::ParentTagIsSecondary;
             }
                 break;
             case TagIndexType::ParentTagIsSecondary:
@@ -543,36 +575,9 @@ namespace NifGenerator
                 break;
             }
         }
-		
+        
         void ExitTagNode(std::string tagName)
         {
-			//if (EntryTagName == "compound")
-			//{
-			//}
-			//else if (EntryTagName == "enum")
-			//{
-			//}
-			//else if (EntryTagName == "bitflags")
-			//{
-			//}
-			//else if (EntryTagName == "bitfield")
-			//{
-			//}
-			//else if (EntryTagName == "niobject")
-			//{
-			//}
-			//else if (EntryTagName == "version")
-			//{
-			//}
-			//else if (EntryTagName == "token")
-			//{
-			//}
-			//else if (EntryTagName == "module")
-			//{
-			//}
-			//else if (EntryTagName == "basic")
-			//{
-			//}
             switch (CurrentTagIndex.CurrentIndexType)
             {
             case TagIndexType::TagIsPrimary:
@@ -582,10 +587,12 @@ namespace NifGenerator
             break;
             case TagIndexType::ParentTagIsPrimary:
             {
+                CurrentTagIndex.CurrentIndexType = TagIndexType::TagIsPrimary;
             }
             break;
             case TagIndexType::ParentTagIsSecondary:
             {
+                CurrentTagIndex.CurrentIndexType = TagIndexType::ParentTagIsPrimary;
             }
             break;
             default://Other code deals with exiting EntryTag
@@ -748,11 +755,11 @@ namespace NifGenerator
                             {
                                 LoadedXmlDataOrder.push_back(DataOrderInfo(EntryTagName,EntryNodeIndex));
                                 EntryTagName.clear();
-								CurrentTagIndex.clear();
+                                CurrentTagIndex.clear();
                             }
                             else//Exiting inner tag 
                             {
-								ExitTagNode(CurrentTag);
+                                ExitTagNode(CurrentTag);
                             }
                             CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
                             Stage = 0;
