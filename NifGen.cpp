@@ -221,6 +221,7 @@ namespace NifGenerator
         /// The option flag values
         /// </summary>
         tsl::ordered_map<std::string, SmallValPlusDesc> FlagValues;
+
         /// <summary>
         /// Adds the option.
         /// </summary>
@@ -463,6 +464,7 @@ namespace NifGenerator
                 Index = indexPosition;
             }
         };
+
         /// <summary>
         /// Strings to string vector.
         /// </summary>
@@ -548,385 +550,9 @@ namespace NifGenerator
         
         InnerTagIndex CurrentTagIndex;
 
-#ifdef NifGenerator_ScanAsUnknownTags
-        //void AddSelfContainedTag(std::string tagName)
-        //{
-        //    switch (CurrentTagIndex.CurrentIndexType)
-        //    {
-        //    case TagIndexType::TagIsEntryLevel:
-        //    {
-        //    }
-        //    break;
-        //    case TagIndexType::TagIsPrimary:
-        //    {
-        //    }
-        //    break;
-        //    case TagIndexType::ParentTagIsPrimary:
-        //    {
-        //    }
-        //    break;
-        //    case TagIndexType::ParentTagIsSecondary:
-        //    {
-        //    }
-        //    break;
-        //    default://Placeholder(should not run unless make error on setting type)
-        //        break;
-        //    }
-        //}
-
-        //void AddTagNodeWithinLast(std::string tagName)
-        //{
-        //    int ParentIndex = CurrentTagIndex.CurrentIndex;//Current Node will be parent of new node
-
-        //    //Now assign new TagNode as current index and previous as the parent
-        //    switch (CurrentTagIndex.CurrentIndexType)
-        //    {
-        //    case TagIndexType::TagIsEntryLevel:
-        //    {
-        //        CurrentTagIndex.CurrentIndexType = TagIndexType::TagIsPrimary;
-        //    }
-        //    break;
-        //    case TagIndexType::TagIsPrimary:
-        //    {
-        //        CurrentTagIndex.CurrentIndexType = TagIndexType::ParentTagIsPrimary;
-        //    }
-        //    break;
-        //    case TagIndexType::ParentTagIsPrimary:
-        //    {
-        //        CurrentTagIndex.CurrentIndexType = TagIndexType::ParentTagIsSecondary;
-        //    }
-        //    break;
-        //    case TagIndexType::ParentTagIsSecondary:
-        //    {
-        //    }
-        //    break;
-        //    default://Placeholder(should not run unless make error on setting type)
-        //        break;
-        //    }
-        //}
-
-        //void ExitTagNode(std::string tagName)
-        //{
-        //    switch (CurrentTagIndex.CurrentIndexType)
-        //    {
-        //    case TagIndexType::TagIsPrimary:
-        //    {
-        //        CurrentTagIndex.CurrentIndexType = TagIndexType::TagIsEntryLevel;
-        //    }
-        //    break;
-        //    case TagIndexType::ParentTagIsPrimary:
-        //    {
-        //        CurrentTagIndex.CurrentIndexType = TagIndexType::TagIsPrimary;
-        //    }
-        //    break;
-        //    case TagIndexType::ParentTagIsSecondary:
-        //    {
-        //        CurrentTagIndex.CurrentIndexType = TagIndexType::ParentTagIsPrimary;
-        //    }
-        //    break;
-        //    default://Other code deals with exiting EntryTag
-        //        break;
-        //    }
-        //}
-
-        /// <summary>
-        /// Generate XML files based on loaded content 
-        /// </summary>
-        void GenerateXMLsFromContent()
-        {
-
-        }
-
-        /// <summary>
-        /// Loads the XML.
-        /// </summary>
-        /// <param name="FilePath">The file path.</param>
-        /// <returns>bool</returns>
-        bool LoadXML(std::string FilePath)
-        {
-            char LineChar;
-            bool InsideXMLComment = false;
-            //If false, then inside tag-content types instead of tags
-            bool InsideTag = false;
-            std::string ScanBuffer = "";
-
-            //First name inside tag becomes CurrentTag
-            std::string CurrentTag = "";
-            std::string CurrentNodeName = "";
-            unsigned int CurrentNodeIndex = 0;
-            //0=NormalTag; 1:SelfContainedTag; 2:TagIsClosing; 3:XMLVersionTag
-            int TagType = 0;
-
-            bool ScanningArgData = false;
-            std::string ArgElement;
-            ArgStringList LastArg;
-            ArgList ArgBuffer;
-
-            bool PotentialComment = false;
-            bool InsideParenthesis = false;
-            //0 = Not Scanning TagContent Yet: 1 = Potential SingleLine TagContent: 2 Multi-line target content
-            short TagContentStage = 0;
-
-            //Current state of code loading for certain sections of code
-            size_t Stage = 0;
-
-            TagDepthTree TagDepth;
-
-            int EntryNodeIndex = -1;
-            std::string EntryTagName = "";
-            bool InsideClosingTag = false;
-
-            bool StartedTagRead = false;
-            bool SkipCurrentTag = false;
-            std::ifstream inFile;
-            inFile.open(FilePath);
-            if (!inFile)
-            {
-                return false;
-            }
-            while (inFile >> LineChar)
-            {
-                if (PotentialComment)
-                {
-                    ScanBuffer += LineChar;
-                    if (ScanBuffer == "--")
-                    {
-                        InsideXMLComment = true;
-                        PotentialComment = false;
-                        ScanBuffer = "";
-                    }
-                    else if (ScanBuffer.size() >= 2)//Detecting non-normal format TagName?
-                    {
-                        PotentialComment = false;
-                        ScanBuffer = "!" + ScanBuffer;
-                    }
-                }
-                else if (InsideXMLComment)//Ignoring all xml inside xml formatted comment
-                {
-                    Stage = ScanBuffer.size();
-                    if (Stage == 0)
-                    {
-                        if (LineChar == '-')
-                        {
-                            ScanBuffer = "-";
-                        }
-                    }
-                    else if (Stage == 1)
-                    {
-                        if (LineChar == '-')
-                        {
-                            ScanBuffer = "--";
-                        }
-                        else
-                        {
-                            ScanBuffer = "";
-                        }
-                    }
-                    else
-                    {
-                        if (LineChar == '>')
-                        {
-                            InsideXMLComment = false;
-                        }
-                        ScanBuffer = "";
-                    }
-                }
-                else if (ScanningArgData)
-                {
-                    if (Stage == 0)
-                    {
-                        if (LineChar == '=')
-                        {
-                            Stage = 1;
-                            ArgElement = "";
-                        }
-                        else if (LineChar != ' ' && LineChar != '\t' && LineChar != '\n')//Skip Whitespace
-                        {
-                            ScanBuffer += LineChar;
-                        }
-                    }
-                    else if (Stage == 1)
-                    {
-                        if (LineChar == '\"')
-                        {
-                            Stage = 2;
-                        }
-                    }
-                    else if (Stage == 2)
-                    {
-                        if (LineChar == '\"') { Stage = 3; }
-                    }
-                    else if (Stage == 3)
-                    {
-                        if (LineChar == ',')
-                        {
-                            LastArg.Add(ArgElement);
-                        }
-                        else if (LineChar == '\"')
-                        {
-                            ArgBuffer.Add(ScanBuffer, LastArg);
-                            ScanningArgData = false;
-                        }
-                        else
-                        {
-                            ArgElement += LineChar;
-                        }
-                    }
-                }
-                else if (StartedTagRead)//Only start saving scans once enter certain depth of xml file
-                {
-                    if (InsideClosingTag)
-                    {
-                        if (LineChar == '>')
-                        {
-                            if (CurrentTag == EntryTagName)//Exiting entry tag
-                            {
-                                EntryTagName.clear();
-                            }
-                            else//Exiting inner tag 
-                            {
-
-                            }
-                            CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
-                            TagContentStage = 0;
-                            InsideClosingTag = false; InsideTag = false;
-                        }
-                    }
-                    else if (InsideTag)
-                    {
-                        if (LineChar == '>')
-                        {
-                            if (EntryTagName.empty())
-                            {
-                                EntryTagName = CurrentTag;
-                            }
-                            else
-                            {
-                            }
-                        }
-                        else if (CurrentTag.empty())
-                        {
-                            if (ScanBuffer.empty())
-                            {
-                                if (LineChar == '!')//Detecting potential Commented Out Parts
-                                    PotentialComment = true;
-                                else if (LineChar == '/')
-                                {
-
-                                }
-                                else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                                    ScanBuffer += LineChar;
-                            }
-                            else if (LineChar == '/')//Closed Tag without any arguments
-                            {
-                                CurrentTag = ScanBuffer;
-                                ScanBuffer = "/";
-                            }
-                            else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
-                            {
-                                CurrentTag = ScanBuffer;
-                                ScanBuffer.clear();
-                                //if (LineChar != '\\')
-                                //{
-                                //    ScanningArgData = true; Stage = 0;
-                                //}
-                            }
-                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                            {
-                                ScanBuffer += LineChar;
-                            }
-                        }
-                        //------------------Scanning Argument Field/Values-------------------------------
-                        else
-                        {
-                            if (ScanBuffer.empty())
-                            {
-                                if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                                {
-                                    ScanBuffer += LineChar;
-                                }
-                            }
-                            else if (LineChar == ' ' || LineChar == '	' || LineChar == '\n')
-                            {
-                                //CurrentTag = ScanBuffer;
-                                ScanBuffer.clear();
-                                //if (LineChar != '\\')
-                                //{
-                                //    ScanningArgData = true; Stage = 0;
-                                //}
-                            }
-                            else if (LineChar != ' ' && LineChar != '	' && LineChar != '\n')
-                            {
-                                ScanBuffer += LineChar;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (LineChar == '<')
-                        {
-                            //Send Description field into tag target
-
-                            InsideTag = true; ScanBuffer.clear();
-                        }
-                        else//If description value is empty, add data to description field buffer
-                        {
-                            ScanBuffer += LineChar;
-                        }
-                    }
-                }
-                else
-                {
-                    if (InsideTag)
-                    {
-                        if (SkipCurrentTag)
-                        {
-                            if (LineChar == '>')
-                            {
-                                SkipCurrentTag = false; ScanBuffer.clear(); InsideTag = false;
-                            }
-                        }
-                        else
-                        {
-                            if (ScanBuffer.empty())
-                            {
-                                if (LineChar == '!')//Detecting potential Commented Out Parts
-                                {
-                                    PotentialComment = true;
-                                }
-                                else if (LineChar == '?')
-                                    SkipCurrentTag = true;
-                                else if (LineChar != ' ' && LineChar != '	')
-                                {
-                                    ScanBuffer += LineChar;
-                                }
-                            }
-                            else if (LineChar == ' ' || LineChar == '	')
-                            {
-                                CurrentTag = ScanBuffer;
-                                ScanBuffer.clear();
-                                StartedTagRead = true;
-                            }
-                            else
-                            {
-                                ScanBuffer += LineChar;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (LineChar == '<')
-                        {
-                            InsideTag = true;
-                        }
-                    }
-                }
-            }
-            return true;
-        }
-#else
         void AddSelfContainedTag(std::string tagName)
         {
+#ifdef NifGenerator_ScanAsUnknownTags
             switch (CurrentTagIndex.CurrentIndexType)
             {
             case TagIndexType::TagIsEntryLevel:
@@ -948,11 +574,37 @@ namespace NifGenerator
             default://Placeholder(should not run unless make error on setting type)
                 break;
             }
+#else
+            switch (CurrentTagIndex.CurrentIndexType)
+            {
+            case TagIndexType::TagIsEntryLevel:
+            {
+            }
+            break;
+            case TagIndexType::TagIsPrimary:
+            {
+            }
+            break;
+            case TagIndexType::ParentTagIsPrimary:
+            {
+            }
+            break;
+            case TagIndexType::ParentTagIsSecondary:
+            {
+            }
+            break;
+            default://Placeholder(should not run unless make error on setting type)
+                break;
+            }
+#endif
         }
 
         void AddTagNodeWithinLast(std::string tagName)
         {
             int ParentIndex = CurrentTagIndex.CurrentIndex;//Current Node will be parent of new node
+
+#ifdef NifGenerator_ScanAsUnknownTags
+#else
             //if (EntryTagName == "compound")
             //    compoundData.back()//.push_back(NewFieldStorage);
             //else if (EntryTagName == "enum")
@@ -971,6 +623,7 @@ namespace NifGenerator
             //    moduleData.back().push_back(NewGeneralTag);
             //else if (EntryTagName == "basic")
             //    basicData.back().push_back(NewGeneralTag);
+#endif
 
             //Now assign new TagNode as current index and previous as the parent
             switch(CurrentTagIndex.CurrentIndexType)
@@ -1031,6 +684,18 @@ namespace NifGenerator
 
         }
 
+        void GenerateDebugOutput()
+        {
+            for (std::vector<DataOrderInfo>::iterator CurrentVal = LoadedXmlDataOrder.begin(), LastVal = LoadedXmlDataOrder.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+            }
+        }
+
+        void GenerateFiles()
+        {
+
+        }
+
         /// <summary>
         /// Loads the XML.
         /// </summary>
@@ -1038,6 +703,20 @@ namespace NifGenerator
         /// <returns>bool</returns>
         bool LoadXML(std::string FilePath)
         {
+            char LineChar;
+            bool InsideXMLComment = false;
+            //If false, then inside tag-content types instead of tags
+            bool InsideTag = false;
+            std::string ScanBuffer = "";
+
+#ifdef NifGenerator_ScanAsUnknownTags
+            //First name inside tag becomes CurrentTag
+            std::string CurrentTag = "";
+            std::string CurrentNodeName = "";
+            unsigned int CurrentNodeIndex = 0;
+            //0=NormalTag; 1:SelfContainedTag; 2:TagIsClosing; 3:XMLVersionTag
+            int TagType = 0;
+#else
             //Blank Element for added Compounds and NiObjects
             FieldStorageTag NewFieldStorage;
             //Blank Element for added Enum
@@ -1050,12 +729,7 @@ namespace NifGenerator
             VersionInfo NewVersionInfo;
             //Blank Element for added basic tags, tokens, and modules
             GeneralTag NewGeneralTag;
-
-            char LineChar;
-            bool InsideXMLComment = false;
-            //If false, then inside tag-content types instead of tags
-            bool InsideTag = false;
-            std::string ScanBuffer = "";
+#endif
 
             bool ScanningArgData = false;
             std::string ArgElement;
@@ -1068,6 +742,12 @@ namespace NifGenerator
             //Current state of code loading for certain sections of code
             size_t Stage = 0;
 
+#ifdef NifGenerator_ScanAsUnknownTags
+            TagDepthTree TagDepth;
+
+            int EntryNodeIndex = -1;
+            std::string EntryTagName = "";
+#endif
             bool InsideClosingTag = false;
 
             bool StartedTagRead = false;
@@ -1168,17 +848,18 @@ namespace NifGenerator
                         }
                     }
                 }
-                else if(StartedTagRead)//Only start saving scans once enter certain depth of xml file
+                else if (StartedTagRead)//Only start saving scans once enter certain depth of xml file
                 {
-                    if(InsideClosingTag)
+                    if (InsideClosingTag)
                     {
-                        if(LineChar=='>')
+                        if (LineChar == '>')
                         {
                             if (CurrentTag == EntryTagName)//Exiting entry tag
                             {
-                                LoadedXmlDataOrder.push_back(DataOrderInfo(EntryTagName,EntryNodeIndex));
-                                EntryTagName.clear();
+                                LoadedXmlDataOrder.push_back(DataOrderInfo(EntryTagName, EntryNodeIndex));
                                 CurrentTagIndex.clear();
+
+                                EntryTagName.clear();
                             }
                             else//Exiting inner tag 
                             {
@@ -1193,8 +874,11 @@ namespace NifGenerator
                     {
                         if (LineChar == '>')//End of a Tag detected
                         {
-                            if (EntryTagName==CurrentTag)
+                            if (EntryTagName == CurrentTag)
                             {
+#ifdef NifGenerator_ScanAsUnknownTags
+
+#else
                                 if (EntryTagName == "compound")
                                     compoundData.back().ArgFields = ArgBuffer;
                                 //else if (EntryTagName == "enum")
@@ -1213,6 +897,7 @@ namespace NifGenerator
                                     moduleData.back().ArgFields = ArgBuffer;
                                 else if (EntryTagName == "basic")
                                     basicData.back().ArgFields = ArgBuffer;
+#endif
                                 ArgBuffer.clear();
                                 if (ScanBuffer == "/")//Self-Contained Tag
                                     EntryTagName.clear();
@@ -1220,7 +905,11 @@ namespace NifGenerator
                                     CurrentTagIndex.clear();//Entering EntryTag that can possibly hold others within
                             }
                             else
-                            {   //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
+                            {
+#ifdef NifGenerator_ScanAsUnknownTags
+
+#else
+                                //Treat both bit and value parameter as the value of the option(so that supports both 0.9.0 and 0.9.2 option structures)
                                 //if (EntryTagName == "compound")
                                 //{
                                 //}
@@ -1239,6 +928,7 @@ namespace NifGenerator
                                 //else if (EntryTagName == "token")
                                 //{
                                 //}
+#endif
                             }
                             InsideTag = false;
                         }
@@ -1248,7 +938,7 @@ namespace NifGenerator
                             {
                                 if (LineChar == '!')//Detecting potential Commented Out Parts
                                     PotentialComment = true;
-                                else if(LineChar=='/')
+                                else if (LineChar == '/')
                                 {
 
                                 }
@@ -1265,6 +955,9 @@ namespace NifGenerator
                                 if (EntryTagName.empty())
                                 {
                                     EntryTagName = ScanBuffer;
+#ifdef NifGenerator_ScanAsUnknownTags
+
+#else
                                     //Add Blank data at default values
                                     if (EntryTagName == "compound")
                                         compoundData.push_back(NewFieldStorage);
@@ -1285,11 +978,13 @@ namespace NifGenerator
                                     else if (EntryTagName == "basic")
                                         basicData.push_back(NewGeneralTag);
                                     //Start Generic Argument Scanning for those with ArgData field (manual code for the others)
-                                    if(EntryTagName=="compound"||EntryTagName=="niobject"|| EntryTagName == "token"|| EntryTagName == "module"|| EntryTagName == "basic")
+                                    if (EntryTagName == "compound" || EntryTagName == "niobject" || EntryTagName == "token" || EntryTagName == "module" || EntryTagName == "basic")
                                         ScanningArgData = true; Stage = 0;
+#endif
                                 }
                                 else
                                 {//Starting inner tag
+/*#ifndef NifGenerator_ScanAsUnknownTags
                                     //if (EntryTagName == "compound")
                                     //    compoundData.back()//.push_back(NewFieldStorage);
                                     //else if (EntryTagName == "enum")
@@ -1308,6 +1003,7 @@ namespace NifGenerator
                                     //    moduleData.back().push_back(NewGeneralTag);
                                     //else if (EntryTagName == "basic")
                                     //    basicData.back().push_back(NewGeneralTag);
+#endif*/
                                     if (ScanBuffer == "/")//Self-Contained Tag
                                         AddSelfContainedTag(CurrentTag);
                                     else
@@ -1323,24 +1019,27 @@ namespace NifGenerator
                             }
                         }
                         //------------------Scanning Argument Field/Values-------------------------------
-                        else if(CurrentTag==EntryTagName)
+                        else if (CurrentTag == EntryTagName)
                         {
-                            if(LineChar=='=')
+                            if (LineChar == '=')
                             {
                                 ArgElement = ScanBuffer; ScanBuffer.clear();
                                 Stage = 1;
                             }
-                            else if(Stage==1)
+                            else if (Stage == 1)
                             {
-                                if(LineChar=='\"')
+                                if (LineChar == '\"')
                                 {
                                     Stage = 2;
                                 }
                             }
-                            else if(Stage==2)
+                            else if (Stage == 2)
                             {
                                 if (LineChar == '\"')
                                 {
+#ifdef NifGenerator_ScanAsUnknownTags
+
+#else
                                     if (EntryTagName == "enum")
                                     {
                                         if (ArgElement == "name")
@@ -1390,6 +1089,7 @@ namespace NifGenerator
                             {
                                 ScanBuffer += LineChar;
                             }
+#endif
                         }
                         else
                         {
@@ -1430,9 +1130,9 @@ namespace NifGenerator
                 {
                     if (InsideTag)
                     {
-                        if(SkipCurrentTag)
+                        if (SkipCurrentTag)
                         {
-                            if(LineChar=='>')
+                            if (LineChar == '>')
                             {
                                 SkipCurrentTag = false; ScanBuffer.clear(); InsideTag = false;
                             }
@@ -1480,17 +1180,8 @@ namespace NifGenerator
             }
             return true;
         }
-        void GenerateDebugOutput()
-        {
-            for (std::vector<DataOrderInfo>::iterator CurrentVal = LoadedXmlDataOrder.begin(), LastVal = LoadedXmlDataOrder.end(); CurrentVal != LastVal; ++CurrentVal)
-            {
-            }
-        }
-        void GenerateFiles()
-        {
 
-        }
-#endif
+
         bool LoadXML()
         {
             return LoadXML("nif.xml");
